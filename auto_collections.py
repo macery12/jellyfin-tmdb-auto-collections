@@ -2,41 +2,70 @@
 import os
 import sys
 import time
+import json
 import logging
 import re
 from collections import deque
 
 import requests
+from dotenv import load_dotenv
 
-# =============================
-# Interactive DRY RUN prompt
-# =============================
+# ============================================================
+# Load .env
+# ============================================================
+load_dotenv()
 
+# ============================================================
+# Colors
+# ============================================================
+class C:
+    R = "\033[0m"
+    G = "\033[92m"
+    Y = "\033[93m"
+    C = "\033[96m"
+    R2 = "\033[91m"
+    B = "\033[1m"
+
+def col(s, c): return f"{c}{s}{C.R}"
+
+# ============================================================
+# Ask for dry run
+# ============================================================
 def ask_dry_run():
     while True:
-        ans = input("Do you want to run a DRY RUN first? (y/n): ").strip().lower()
-        if ans in ("y", "yes"):
+        a = input("Dry run first? (y/n): ").strip().lower()
+        if a in ("y", "yes"):
             return True
-        if ans in ("n", "no"):
+        if a in ("n", "no"):
             return False
-        print("Enter Y or N")
+        print("Enter y or n")
 
 DRY_RUN = ask_dry_run()
 
-# =============================
-# Logging setup
-# =============================
+# ============================================================
+# Logging
+# ============================================================
+os.makedirs("logs", exist_ok=True)
 
 logging.basicConfig(
-    level=logging.INFO,
-    format="%(message)s",
+    filename="logs/collections.log",
+    filemode="a",
+    format="%(asctime)s [%(levelname)s] %(message)s",
+    level=logging.INFO
 )
-log = logging.getLogger("collections")
+log = logging.getLogger("jf")
 
-# =============================
-# Environment / Config
-# =============================
+def out(msg, color=None):
+    if color:
+        print(col(msg, color))
+        log.info(msg)
+    else:
+        print(msg)
+        log.info(msg)
 
+# ============================================================
+# Config from env
+# ============================================================
 JELLYFIN_URL = os.getenv("JELLYFIN_URL", "").rstrip("/")
 JELLYFIN_API_KEY = os.getenv("JELLYFIN_API_KEY")
 TMDB_API_KEY = os.getenv("TMDB_API_KEY")
@@ -46,60 +75,80 @@ MIN_MOVIES = 2
 LANG = "en-US"
 
 if not JELLYFIN_URL or not JELLYFIN_API_KEY or not TMDB_API_KEY:
-    log.error("Missing environment variables. Copy config.example.env → .env and edit it.")
+    out("Missing API keys in .env file.", C.R2)
     sys.exit(1)
 
-# =============================
-# TMDb Rate Limiter
-# =============================
-
-TMDB_MAX_CALLS = 35
-TMDB_PERIOD = 10.0
+# ============================================================
+# TMDb rate limiter
+# ============================================================
+TMDB_MAX = 35
+TMDB_PERIOD = 10
 
 class RateLimiter:
-    def __init__(self, max_calls, period):
-        self.max_calls, self.period = max_calls, period
+    def __init__(self):
         self.calls = deque()
 
     def wait(self):
         now = time.time()
-        while self.calls and now - self.calls[0] > self.period:
+        while self.calls and now - self.calls[0] > TMDB_PERIOD:
             self.calls.popleft()
 
-        if len(self.calls) >= self.max_calls:
-            sleep = self.period - (now - self.calls[0]) + 0.05
+        if len(self.calls) >= TMDB_MAX:
+            sleep = TMDB_PERIOD - (now - self.calls[0]) + 0.1
             time.sleep(sleep)
 
         self.calls.append(time.time())
 
-tmdb_limit = RateLimiter(TMDB_MAX_CALLS, TMDB_PERIOD)
+limit = RateLimiter()
 
-# =============================
-# Helper Functions
-# =============================
+# ============================================================
+# Cache load/save
+# ============================================================
+CACHE_FILE = "tmdb_cache.json"
+if os.path.exists(CACHE_FILE):
+    try:
+        with open(CACHE_FILE, "r") as f:
+            TMDB_CACHE = json.load(f)
+    except:
+        TMDB_CACHE = {}
+else:
+    TMDB_CACHE = {}
 
+def cache_save():
+    with open(CACHE_FILE, "w") as f:
+        json.dump(TMDB_CACHE, f, indent=2)
+
+# ============================================================
+# Jellyfin HTTP helpers
+# ============================================================
 INVALID = re.compile(r'[:<>\"/\\|?*]')
 
-def sanitize(name):
-    return re.sub(r"\s+", " ", INVALID.sub(" ", name)).strip()
+def clean(s):
+    return re.sub(r"\s+", " ", INVALID.sub(" ", s)).strip()
 
 def jf_headers():
     return {
         "X-Emby-Token": JELLYFIN_API_KEY,
-        "Accept": "application/json",
+        "Accept": "application/json"
     }
 
 def jf_get(path, params=None):
-    r = requests.get(f"{JELLYFIN_URL}{path}", headers=jf_headers(), params=params, timeout=20)
+    r = requests.get(f"{JELLYFIN_URL}{path}", headers=jf_headers(), params=params, timeout=30)
     r.raise_for_status()
     return r.json()
 
 def jf_post(path, params=None, json=None):
     if DRY_RUN:
-        log.info(f"[DRY RUN] Would POST → {path}")
+        out(f"[DRY RUN] POST → {path} params={params}", C.Y)
         return None
 
-    r = requests.post(f"{JELLYFIN_URL}{path}", headers=jf_headers(), params=params, json=json, timeout=20)
+    r = requests.post(
+        f"{JELLYFIN_URL}{path}",
+        headers=jf_headers(),
+        params=params,
+        json=json,
+        timeout=30
+    )
     if r.status_code not in (200, 201, 204):
         r.raise_for_status()
 
@@ -108,37 +157,73 @@ def jf_post(path, params=None, json=None):
     except:
         return None
 
-def jf_upload_image(item_id, image_type, image_bytes):
+def jf_upload_image(item_id, img_type, img_bytes):
     if DRY_RUN:
-        log.info(f"[DRY RUN] Would upload poster to → {item_id}")
+        out(f"[DRY RUN] Would upload poster → {item_id}", C.Y)
         return
-
     r = requests.post(
-        f"{JELLYFIN_URL}/Items/{item_id}/Images/{image_type}",
+        f"{JELLYFIN_URL}/Items/{item_id}/Images/{img_type}",
         headers={"X-Emby-Token": JELLYFIN_API_KEY},
-        files={"file": ("poster.jpg", image_bytes, "image/jpeg")},
+        files={"file": ("poster.jpg", img_bytes, "image/jpeg")},
         timeout=30,
     )
     if r.status_code not in (200, 204):
-        log.warning(f"Failed to upload poster: {r.text}")
+        out(f"Poster upload failed: {r.text}", C.R2)
 
-def tmdb_get(path):
-    tmdb_limit.wait()
-    r = requests.get(
-        f"https://api.themoviedb.org/3{path}",
-        params={"api_key": TMDB_API_KEY, "language": LANG},
-        timeout=20,
-    )
-    if r.status_code == 429:
-        time.sleep(5)
-        return tmdb_get(path)
-    r.raise_for_status()
-    return r.json()
+# ============================================================
+# TMDb request with caching
+# ============================================================
+def tmdb_get(path, movie_name="", tmdb_id=""):
+    key = path
 
-# =============================
-# Jellyfin Movie & Collection Logic
-# =============================
+    # Cached
+    if key in TMDB_CACHE:
+        return TMDB_CACHE[key]
 
+    # Not cached → fetch
+    attempts = 3
+    for attempt in range(1, attempts + 1):
+        try:
+            limit.wait()
+            r = requests.get(
+                f"https://api.themoviedb.org/3{path}",
+                params={"api_key": TMDB_API_KEY, "language": LANG},
+                timeout=5,
+            )
+
+            if r.status_code == 429:
+                wait = int(r.headers.get("Retry-After", "3"))
+                out(f"Rate limit hit, waiting {wait}s...", C.Y)
+                time.sleep(wait)
+                continue
+
+            if r.status_code == 401:
+                out("TMDb API key invalid", C.R2)
+                sys.exit(1)
+
+            r.raise_for_status()
+            data = r.json()
+
+            TMDB_CACHE[key] = data
+            cache_save()
+            return data
+
+        except Exception as e:
+            out(
+                f"TMDb ERROR on '{movie_name}' (ID {tmdb_id}), "
+                f"attempt {attempt}/{attempts}: {e}",
+                C.R2
+            )
+            time.sleep(1)
+
+    out(f"Skipping movie '{movie_name}' after repeated failures.", C.Y)
+    TMDB_CACHE[key] = None
+    cache_save()
+    return None
+
+# ============================================================
+# Jellyfin logic
+# ============================================================
 def ensure_user_id():
     global JELLYFIN_USER_ID
     if JELLYFIN_USER_ID:
@@ -150,7 +235,7 @@ def ensure_user_id():
             JELLYFIN_USER_ID = u["Id"]
             return JELLYFIN_USER_ID
 
-    raise RuntimeError("Could not auto-detect Jellyfin user")
+    raise RuntimeError("No Jellyfin user found")
 
 def jf_movies():
     user = ensure_user_id()
@@ -159,116 +244,139 @@ def jf_movies():
     size = 200
 
     while True:
-        chunk = jf_get("/Items", {
+        d = jf_get("/Items", {
             "IncludeItemTypes": "Movie",
             "Fields": "ProviderIds",
+            "CollapseBoxSetItems": "false",
+            "Recursive": "true",
             "Limit": size,
             "StartIndex": start,
             "UserId": user
-        }).get("Items", [])
-
+        })
+        chunk = d.get("Items", [])
         if not chunk:
             break
-        movies += chunk
+
+        movies.extend(chunk)
+
         if len(chunk) < size:
             break
+
         start += size
 
     return movies
 
-def jf_find_collection(name: str):
+def jf_find_collection(name):
     user = ensure_user_id()
-    data = jf_get("/Items", {
+    d = jf_get("/Items", {
         "IncludeItemTypes": "BoxSet",
         "SearchTerm": name,
-        "UserId": user
+        "UserId": user,
+        "Recursive": "true"
     })
-    for item in data.get("Items", []):
+    for item in d.get("Items", []):
         if item.get("Name") == name:
             return item["Id"]
     return None
 
 def tmdb_poster(cid):
+    data = tmdb_get(f"/collection/{cid}")
+    if not data:
+        return None
+    poster = data.get("poster_path")
+    if not poster:
+        return None
+
+    url = "https://image.tmdb.org/t/p/original" + poster
     try:
-        info = tmdb_get(f"/collection/{cid}")
-        poster = info.get("poster_path")
-        if not poster:
-            return None
-        img = requests.get("https://image.tmdb.org/t/p/original" + poster, timeout=20)
-        img.raise_for_status()
-        return img.content
+        r = requests.get(url, timeout=30)
+        r.raise_for_status()
+        return r.content
     except:
         return None
 
-def create_collection(name, ids):
-    safe = sanitize(name)
-    res = jf_post("/Collections", params={"Name": safe, "Ids": ",".join(ids)})
-    if res and "Id" in res:
-        return res["Id"]
-    return jf_find_collection(safe)
-
-# =============================
-# Build Collection Mapping
-# =============================
-
+# ============================================================
+# Build collection map
+# ============================================================
 def build_collections(movies):
+    out("\nChecking TMDb collection info...\n", C.C)
+
     mapping = {}
-    for m in movies:
+    missing = []
+
+    for i, m in enumerate(movies, start=1):
+        name = m.get("Name", "Unknown")
         p = m.get("ProviderIds") or {}
         tmdb_id = p.get("Tmdb") or p.get("tmdb") or p.get("TMDB")
+
+        out(f"[{i}/{len(movies)}] Checking → {name}", C.C)
+
         if not tmdb_id:
+            missing.append(name)
             continue
 
-        info = tmdb_get(f"/movie/{tmdb_id}")
-        col = info.get("belongs_to_collection")
-        if not col:
+        info = tmdb_get(f"/movie/{tmdb_id}", movie_name=name, tmdb_id=tmdb_id)
+        if not info:
             continue
 
-        cid = str(col["id"])
+        colinfo = info.get("belongs_to_collection")
+        if not colinfo:
+            continue
+
+        cid = str(colinfo["id"])
         if cid not in mapping:
-            mapping[cid] = {"name": col["name"], "ids": []}
+            mapping[cid] = {"name": colinfo["name"], "ids": []}
+
         mapping[cid]["ids"].append(m["Id"])
 
-    return {
-        cid: data
-        for cid, data in mapping.items()
-        if len(data["ids"]) >= MIN_MOVIES
+    if missing:
+        out(f"\n{len(missing)} movies missing TMDb IDs", C.Y)
+
+    # Filter
+    final = {
+        cid: d for cid, d in mapping.items()
+        if len(d["ids"]) >= MIN_MOVIES
     }
 
-# =============================
-# Main Sync Logic
-# =============================
+    return final
 
+# ============================================================
+# Main sync
+# ============================================================
 def main():
-    log.info("\n=== Jellyfin TMDb Auto Collection Builder ===\n")
-    movies = jf_movies()
-    cols = build_collections(movies)
+    out("\n=== Jellyfin TMDb Auto Collection Builder ===\n", C.C)
 
-    for cid, info in sorted(cols.items(), key=lambda x: x[1]["name"]):
-        name = sanitize(info["name"])
-        ids = info["ids"]
+    movies = jf_movies()
+    out(f"Found {len(movies)} movies\n", C.C)
+
+    collections = build_collections(movies)
+    out(f"\nFound {len(collections)} TMDb collections\n", C.C)
+
+    for cid, d in sorted(collections.items(), key=lambda x: x[1]["name"]):
+        name = clean(d["name"])
+        ids = d["ids"]
 
         existing = jf_find_collection(name)
         if existing:
-            log.info(f"UPDATE → {name} ({len(ids)} movies)")
+            out(f"ALREADY_EXISTS → {name} ({len(ids)} movies)", C.Y)
             jf_post(f"/Collections/{existing}/Items", params={"Ids": ",".join(ids)})
-            collection_id = existing
+            cid_jf = existing
         else:
-            log.info(f"CREATE → {name} ({len(ids)} movies)")
-            collection_id = create_collection(name, ids)
+            out(f"CREATE → {name} ({len(ids)} movies)", C.G)
+            cid_jf = create_collection(name, ids)
 
-        if not collection_id:
-            log.info(f"SKIP → {name} (could not create)")
+        if not cid_jf:
+            out(f"Failed to create {name}", C.R2)
             continue
 
         poster = tmdb_poster(cid)
         if poster:
-            log.info(f"ARTWORK → Setting poster for {name}")
-            jf_upload_image(collection_id, "Primary", poster)
+            out(f"POSTER → Applying artwork: {name}", C.C)
+            jf_upload_image(cid_jf, "Primary", poster)
         else:
-            log.info(f"ARTWORK → No poster found for {name}")
+            out(f"POSTER → No poster found: {name}", C.Y)
 
-    log.info("\n=== COMPLETE ===\n")
+    out("\n=== COMPLETE ===\n", C.G)
 
 if __name__ == "__main__":
     main()
