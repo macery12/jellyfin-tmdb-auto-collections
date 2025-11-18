@@ -1,5 +1,5 @@
 import requests
-
+import base64
 
 class Jellyfin:
     def __init__(self, base_url, api_key, dry_run=False, logger=None):
@@ -56,15 +56,29 @@ class Jellyfin:
             self._log(f"[DRY RUN] Would upload poster for item {item_id}")
             return
 
-        r = requests.post(
-            f"{self.base}/Items/{item_id}/Images/{img_type}",
-            headers={"X-Emby-Token": self.key},
-            files={"file": ("poster.jpg", img_bytes, "image/jpeg")},
-            timeout=30
-        )
+        # Endpoint: /Items/{itemId}/Images/{imageType}
+        url = f"{self.base}/Items/{item_id}/Images/{img_type}"
+
+        # Jellyfin devs: body should be BASE64 string, not binary
+        b64_data = base64.b64encode(img_bytes).decode("ascii")
+
+        headers = {
+            "X-Emby-Token": self.key,
+            # Use an explicit, concrete image type, not "image/*"
+            # TMDb posters are JPEG, so image/jpeg is appropriate here
+            "Content-Type": "image/jpeg",
+        }
+
+        try:
+            r = requests.post(url, headers=headers, data=b64_data, timeout=30)
+        except Exception as e:
+            self._log(f"Poster upload failed (request error): {e}")
+            return
 
         if r.status_code not in (200, 204):
-            self._log(f"Poster upload failed: {r.text}")
+            # Show status + body so we can see what Jellyfin complains about
+            self._log(f"Poster upload failed: {r.status_code} {r.text}")
+
 
     # ---------- High-level wrapper functions ----------
 
