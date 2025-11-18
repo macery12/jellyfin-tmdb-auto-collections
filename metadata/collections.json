@@ -1,0 +1,1976 @@
+{
+  "collections": {
+    "10": {
+      "id": 10,
+      "name": "Star Wars Collection",
+      "movies": [
+        {
+          "id": 11,
+          "title": "Star Wars"
+        },
+        {
+          "id": 1891,
+          "title": "The Empire Strikes Back"
+        },
+        {
+          "id": 1892,
+          "title": "Return of the Jedi"
+        },
+        {
+          "id": 1893,
+          "title": "Star Wars: Episode I - The Phantom Menace"
+        },
+        {
+          "id": 1894,
+          "title": "Star Wars: Episode II - Attack of the Clones"
+        },
+        {
+          "id": 1895,
+          "title": "Star Wars: Episode III - Revenge of the Sith"
+        },
+        {
+          "id": 140607,
+          "title": "Star Wars: The Force Awakens"
+        },
+        {
+          "id": 181812,
+          "title": "Star Wars: The Rise of Skywalker"
+        },
+        {
+          "id": 181808,
+          "title": "Star Wars: The Last Jedi"
+        }
+      ]
+    },
+    "295": {
+      "id": 295,
+      "name": "Pirates of the Caribbean Collection",
+      "movies": [
+        {
+          "id": 22,
+          "title": "Pirates of the Caribbean: The Curse of the Black Pearl"
+        },
+        {
+          "id": 58,
+          "title": "Pirates of the Caribbean: Dead Man's Chest"
+        },
+        {
+          "id": 285,
+          "title": "Pirates of the Caribbean: At World's End"
+        },
+        {
+          "id": 1865,
+          "title": "Pirates of the Caribbean: On Stranger Tides"
+        },
+        {
+          "id": 166426,
+          "title": "Pirates of the Caribbean: Dead Men Tell No Tales"
+        }
+      ]
+    },
+    "264": {
+      "id": 264,
+      "name": "Back to the Future Collection",
+      "movies": [
+        {
+          "id": 105,
+          "title": "Back to the Future"
+        },
+        {
+          "id": 165,
+          "title": "Back to the Future Part II"
+        },
+        {
+          "id": 196,
+          "title": "Back to the Future Part III"
+        }
+      ]
+    },
+    "119": {
+      "id": 119,
+      "name": "The Lord of the Rings Collection",
+      "movies": [
+        {
+          "id": 120,
+          "title": "The Lord of the Rings: The Fellowship of the Ring"
+        },
+        {
+          "id": 121,
+          "title": "The Lord of the Rings: The Two Towers"
+        },
+        {
+          "id": 122,
+          "title": "The Lord of the Rings: The Return of the King"
+        }
+      ]
+    },
+    "263": {
+      "id": 263,
+      "name": "The Dark Knight Collection",
+      "movies": [
+        {
+          "id": 155,
+          "title": "The Dark Knight"
+        },
+        {
+          "id": 49026,
+          "title": "The Dark Knight Rises"
+        },
+        {
+          "id": 272,
+          "title": "Batman Begins"
+        }
+      ]
+    },
+    "230": {
+      "id": 230,
+      "name": "The Godfather Collection",
+      "movies": [
+        {
+          "id": 238,
+          "title": "The Godfather"
+        },
+        {
+          "id": 240,
+          "title": "The Godfather Part II"
+        },
+        {
+          "id": 242,
+          "title": "The Godfather Part III"
+        }
+      ]
+    },
+    "8091": {
+      "id": 8091,
+      "name": "Alien Collection",
+      "movies": [
+        {
+          "id": 348,
+          "title": "Alien"
+        },
+        {
+          "id": 679,
+          "title": "Aliens"
+        },
+        {
+          "id": 8077,
+          "title": "Alien\u00b3"
+        },
+        {
+          "id": 8078,
+          "title": "Alien Resurrection"
+        }
+      ]
+    },
+    "420": {
+      "id": 420,
+      "name": "The Chronicles of Narnia Collection",
+      "movies": [
+        {
+          "id": 411,
+          "title": "The Chronicles of Narnia: The Lion, the Witch and the Wardrobe"
+        },
+        {
+          "id": 2454,
+          "title": "The Chronicles of Narnia: Prince Caspian"
+        },
+        {
+          "id": 10140,
+          "title": "The Chronicles of Narnia: The Voyage of the Dawn Treader"
+        }
+      ]
+    },
+    "2344": {
+      "id": 2344,
+      "name": "The Matrix Collection",
+      "movies": [
+        {
+          "id": 603,
+          "title": "The Matrix"
+        },
+        {
+          "id": 604,
+          "title": "The Matrix Reloaded"
+        },
+        {
+          "id": 605,
+          "title": "The Matrix Revolutions"
+        },
+        {
+          "id": 624860,
+          "title": "The Matrix Resurrections"
+        }
+      ]
+    },
+    "1241": {
+      "id": 1241,
+      "name": "Harry Potter Collection",
+      "movies": [
+        {
+          "id": 671,
+          "title": "Harry Potter and the Philosopher's Stone"
+        },
+        {
+          "id": 672,
+          "title": "Harry Potter and the Chamber of Secrets"
+        },
+        {
+          "id": 674,
+          "title": "Harry Potter and the Goblet of Fire"
+        },
+        {
+          "id": 767,
+          "title": "Harry Potter and the Half-Blood Prince"
+        },
+        {
+          "id": 673,
+          "title": "Harry Potter and the Prisoner of Azkaban"
+        },
+        {
+          "id": 675,
+          "title": "Harry Potter and the Order of the Phoenix"
+        },
+        {
+          "id": 12444,
+          "title": "Harry Potter and the Deathly Hallows: Part 1"
+        },
+        {
+          "id": 12445,
+          "title": "Harry Potter and the Deathly Hallows: Part 2"
+        }
+      ]
+    },
+    "2150": {
+      "id": 2150,
+      "name": "Shrek Collection",
+      "movies": [
+        {
+          "id": 808,
+          "title": "Shrek"
+        },
+        {
+          "id": 809,
+          "title": "Shrek 2"
+        },
+        {
+          "id": 810,
+          "title": "Shrek the Third"
+        },
+        {
+          "id": 10192,
+          "title": "Shrek Forever After"
+        },
+        {
+          "id": 421892,
+          "title": "Shrek 5"
+        }
+      ]
+    },
+    "10194": {
+      "id": 10194,
+      "name": "Toy Story Collection",
+      "movies": [
+        {
+          "id": 862,
+          "title": "Toy Story"
+        },
+        {
+          "id": 863,
+          "title": "Toy Story 2"
+        },
+        {
+          "id": 10193,
+          "title": "Toy Story 3"
+        },
+        {
+          "id": 301528,
+          "title": "Toy Story 4"
+        },
+        {
+          "id": 1084244,
+          "title": "Toy Story 5"
+        }
+      ]
+    },
+    "2602": {
+      "id": 2602,
+      "name": "Scream Collection",
+      "movies": [
+        {
+          "id": 4232,
+          "title": "Scream"
+        },
+        {
+          "id": 4233,
+          "title": "Scream 2"
+        },
+        {
+          "id": 4234,
+          "title": "Scream 3"
+        },
+        {
+          "id": 41446,
+          "title": "Scream 4"
+        },
+        {
+          "id": 646385,
+          "title": "Scream"
+        },
+        {
+          "id": 934433,
+          "title": "Scream VI"
+        },
+        {
+          "id": 1159559,
+          "title": "Scream 7"
+        }
+      ]
+    },
+    "4246": {
+      "id": 4246,
+      "name": "Scary Movie Collection",
+      "movies": [
+        {
+          "id": 4247,
+          "title": "Scary Movie"
+        },
+        {
+          "id": 4248,
+          "title": "Scary Movie 2"
+        },
+        {
+          "id": 4257,
+          "title": "Scary Movie 4"
+        },
+        {
+          "id": 4258,
+          "title": "Scary Movie 5"
+        },
+        {
+          "id": 4256,
+          "title": "Scary Movie 3"
+        },
+        {
+          "id": 1273221,
+          "title": "Scary Movie"
+        }
+      ]
+    },
+    "52785": {
+      "id": 52785,
+      "name": "xXx Collection",
+      "movies": [
+        {
+          "id": 7451,
+          "title": "xXx"
+        },
+        {
+          "id": 11679,
+          "title": "xXx: State of the Union"
+        },
+        {
+          "id": 47971,
+          "title": "xXx: Return of Xander Cage"
+        }
+      ]
+    },
+    "33514": {
+      "id": 33514,
+      "name": "The Twilight Collection",
+      "movies": [
+        {
+          "id": 8966,
+          "title": "Twilight"
+        },
+        {
+          "id": 18239,
+          "title": "The Twilight Saga: New Moon"
+        },
+        {
+          "id": 50619,
+          "title": "The Twilight Saga: Breaking Dawn - Part 1"
+        },
+        {
+          "id": 50620,
+          "title": "The Twilight Saga: Breaking Dawn - Part 2"
+        },
+        {
+          "id": 24021,
+          "title": "The Twilight Saga: Eclipse"
+        }
+      ]
+    },
+    "468222": {
+      "id": 468222,
+      "name": "The Incredibles Collection",
+      "movies": [
+        {
+          "id": 9806,
+          "title": "The Incredibles"
+        },
+        {
+          "id": 260513,
+          "title": "Incredibles 2"
+        },
+        {
+          "id": 1327821,
+          "title": "Incredibles 3"
+        }
+      ]
+    },
+    "131292": {
+      "id": 131292,
+      "name": "Iron Man Collection",
+      "movies": [
+        {
+          "id": 10138,
+          "title": "Iron Man 2"
+        },
+        {
+          "id": 68721,
+          "title": "Iron Man 3"
+        },
+        {
+          "id": 1726,
+          "title": "Iron Man"
+        }
+      ]
+    },
+    "87096": {
+      "id": 87096,
+      "name": "Avatar Collection",
+      "movies": [
+        {
+          "id": 76600,
+          "title": "Avatar: The Way of Water"
+        },
+        {
+          "id": 83533,
+          "title": "Avatar: Fire and Ash"
+        },
+        {
+          "id": 216527,
+          "title": "Avatar 4"
+        },
+        {
+          "id": 19995,
+          "title": "Avatar"
+        },
+        {
+          "id": 393209,
+          "title": "Avatar 5"
+        }
+      ]
+    },
+    "63043": {
+      "id": 63043,
+      "name": "TRON Collection",
+      "movies": [
+        {
+          "id": 97,
+          "title": "Tron"
+        },
+        {
+          "id": 20526,
+          "title": "TRON: Legacy"
+        },
+        {
+          "id": 533533,
+          "title": "TRON: Ares"
+        }
+      ]
+    },
+    "86311": {
+      "id": 86311,
+      "name": "The Avengers Collection",
+      "movies": [
+        {
+          "id": 24428,
+          "title": "The Avengers"
+        },
+        {
+          "id": 99861,
+          "title": "Avengers: Age of Ultron"
+        },
+        {
+          "id": 299536,
+          "title": "Avengers: Infinity War"
+        },
+        {
+          "id": 299534,
+          "title": "Avengers: Endgame"
+        },
+        {
+          "id": 1003596,
+          "title": "Avengers: Doomsday"
+        },
+        {
+          "id": 1003598,
+          "title": "Avengers: Secret Wars"
+        }
+      ]
+    },
+    "401562": {
+      "id": 401562,
+      "name": "Teenage Mutant Ninja Turtles (Remake) Collection",
+      "movies": [
+        {
+          "id": 98566,
+          "title": "Teenage Mutant Ninja Turtles"
+        },
+        {
+          "id": 308531,
+          "title": "Teenage Mutant Ninja Turtles: Out of the Shadows"
+        }
+      ]
+    },
+    "386382": {
+      "id": 386382,
+      "name": "Frozen Collection",
+      "movies": [
+        {
+          "id": 109445,
+          "title": "Frozen"
+        },
+        {
+          "id": 330457,
+          "title": "Frozen II"
+        },
+        {
+          "id": 1024604,
+          "title": "Frozen III"
+        },
+        {
+          "id": 1205983,
+          "title": "Frozen IV"
+        }
+      ]
+    },
+    "121938": {
+      "id": 121938,
+      "name": "The Hobbit Collection",
+      "movies": [
+        {
+          "id": 49051,
+          "title": "The Hobbit: An Unexpected Journey"
+        },
+        {
+          "id": 57158,
+          "title": "The Hobbit: The Desolation of Smaug"
+        },
+        {
+          "id": 122917,
+          "title": "The Hobbit: The Battle of the Five Armies"
+        }
+      ]
+    },
+    "313086": {
+      "id": 313086,
+      "name": "The Conjuring Collection",
+      "movies": [
+        {
+          "id": 138843,
+          "title": "The Conjuring"
+        },
+        {
+          "id": 259693,
+          "title": "The Conjuring 2"
+        },
+        {
+          "id": 423108,
+          "title": "The Conjuring: The Devil Made Me Do It"
+        },
+        {
+          "id": 1038392,
+          "title": "The Conjuring: Last Rites"
+        }
+      ]
+    },
+    "1022790": {
+      "id": 1022790,
+      "name": "Inside Out Collection",
+      "movies": [
+        {
+          "id": 150540,
+          "title": "Inside Out"
+        },
+        {
+          "id": 1022789,
+          "title": "Inside Out 2"
+        }
+      ]
+    },
+    "295130": {
+      "id": 295130,
+      "name": "The Maze Runner Collection",
+      "movies": [
+        {
+          "id": 198663,
+          "title": "The Maze Runner"
+        },
+        {
+          "id": 294254,
+          "title": "Maze Runner: The Scorch Trials"
+        },
+        {
+          "id": 336843,
+          "title": "Maze Runner: The Death Cure"
+        }
+      ]
+    },
+    "344830": {
+      "id": 344830,
+      "name": "Fifty Shades Collection",
+      "movies": [
+        {
+          "id": 216015,
+          "title": "Fifty Shades of Grey"
+        },
+        {
+          "id": 341174,
+          "title": "Fifty Shades Darker"
+        },
+        {
+          "id": 337167,
+          "title": "Fifty Shades Freed"
+        }
+      ]
+    },
+    "1084247": {
+      "id": 1084247,
+      "name": "Zootopia Collection",
+      "movies": [
+        {
+          "id": 269149,
+          "title": "Zootopia"
+        },
+        {
+          "id": 1084242,
+          "title": "Zootopia 2"
+        }
+      ]
+    },
+    "468552": {
+      "id": 468552,
+      "name": "Wonder Woman Collection",
+      "movies": [
+        {
+          "id": 297762,
+          "title": "Wonder Woman"
+        },
+        {
+          "id": 464052,
+          "title": "Wonder Woman 1984"
+        }
+      ]
+    },
+    "531241": {
+      "id": 531241,
+      "name": "Spider-Man (MCU) Collection",
+      "movies": [
+        {
+          "id": 315635,
+          "title": "Spider-Man: Homecoming"
+        },
+        {
+          "id": 429617,
+          "title": "Spider-Man: Far From Home"
+        },
+        {
+          "id": 634649,
+          "title": "Spider-Man: No Way Home"
+        },
+        {
+          "id": 969681,
+          "title": "Spider-Man: Brand New Day"
+        }
+      ]
+    },
+    "573436": {
+      "id": 573436,
+      "name": "Spider-Man: Spider-Verse Collection",
+      "movies": [
+        {
+          "id": 324857,
+          "title": "Spider-Man: Into the Spider-Verse"
+        },
+        {
+          "id": 569094,
+          "title": "Spider-Man: Across the Spider-Verse"
+        },
+        {
+          "id": 911916,
+          "title": "Spider-Man: Beyond the Spider-Verse"
+        }
+      ]
+    },
+    "1451578": {
+      "id": 1451578,
+      "name": "Coco Collection",
+      "movies": [
+        {
+          "id": 354912,
+          "title": "Coco"
+        },
+        {
+          "id": 1451567,
+          "title": "Coco 2"
+        }
+      ]
+    },
+    "1290597": {
+      "id": 1290597,
+      "name": "Road House (Remake) Collection",
+      "movies": [
+        {
+          "id": 359410,
+          "title": "Road House"
+        },
+        {
+          "id": 1290379,
+          "title": "Road House 2"
+        }
+      ]
+    },
+    "531330": {
+      "id": 531330,
+      "name": "Top Gun Collection",
+      "movies": [
+        {
+          "id": 744,
+          "title": "Top Gun"
+        },
+        {
+          "id": 361743,
+          "title": "Top Gun: Maverick"
+        },
+        {
+          "id": 1229934,
+          "title": "Untitled Top Gun 3"
+        }
+      ]
+    },
+    "9485": {
+      "id": 9485,
+      "name": "The Fast and the Furious Collection",
+      "movies": [
+        {
+          "id": 584,
+          "title": "2 Fast 2 Furious"
+        },
+        {
+          "id": 9615,
+          "title": "The Fast and the Furious: Tokyo Drift"
+        },
+        {
+          "id": 9799,
+          "title": "The Fast and the Furious"
+        },
+        {
+          "id": 51497,
+          "title": "Fast Five"
+        },
+        {
+          "id": 82992,
+          "title": "Fast & Furious 6"
+        },
+        {
+          "id": 168259,
+          "title": "Furious 7"
+        },
+        {
+          "id": 13804,
+          "title": "Fast & Furious"
+        },
+        {
+          "id": 337339,
+          "title": "The Fate of the Furious"
+        },
+        {
+          "id": 385687,
+          "title": "Fast X"
+        },
+        {
+          "id": 385128,
+          "title": "F9"
+        },
+        {
+          "id": 755679,
+          "title": "Fast X: Part 2"
+        }
+      ]
+    },
+    "968080": {
+      "id": 968080,
+      "name": "Wicked Collection",
+      "movies": [
+        {
+          "id": 402431,
+          "title": "Wicked"
+        },
+        {
+          "id": 967941,
+          "title": "Wicked: For Good"
+        }
+      ]
+    },
+    "948485": {
+      "id": 948485,
+      "name": "The Batman Collection",
+      "movies": [
+        {
+          "id": 414906,
+          "title": "The Batman"
+        },
+        {
+          "id": 806704,
+          "title": "Untitled The Batman Sequel"
+        }
+      ]
+    },
+    "531242": {
+      "id": 531242,
+      "name": "Suicide Squad Collection",
+      "movies": [
+        {
+          "id": 297761,
+          "title": "Suicide Squad"
+        },
+        {
+          "id": 436969,
+          "title": "The Suicide Squad"
+        }
+      ]
+    },
+    "726871": {
+      "id": 726871,
+      "name": "Dune Collection",
+      "movies": [
+        {
+          "id": 438631,
+          "title": "Dune"
+        },
+        {
+          "id": 693134,
+          "title": "Dune: Part Two"
+        },
+        {
+          "id": 1170608,
+          "title": "Dune: Part Three"
+        }
+      ]
+    },
+    "477962": {
+      "id": 477962,
+      "name": "It Collection",
+      "movies": [
+        {
+          "id": 474350,
+          "title": "It Chapter Two"
+        },
+        {
+          "id": 346364,
+          "title": "It"
+        }
+      ]
+    },
+    "86066": {
+      "id": 86066,
+      "name": "Despicable Me Collection",
+      "movies": [
+        {
+          "id": 20352,
+          "title": "Despicable Me"
+        },
+        {
+          "id": 93456,
+          "title": "Despicable Me 2"
+        },
+        {
+          "id": 324852,
+          "title": "Despicable Me 3"
+        },
+        {
+          "id": 519182,
+          "title": "Despicable Me 4"
+        }
+      ]
+    },
+    "448150": {
+      "id": 448150,
+      "name": "Deadpool Collection",
+      "movies": [
+        {
+          "id": 293660,
+          "title": "Deadpool"
+        },
+        {
+          "id": 383498,
+          "title": "Deadpool 2"
+        },
+        {
+          "id": 533535,
+          "title": "Deadpool & Wolverine"
+        }
+      ]
+    },
+    "702624": {
+      "id": 702624,
+      "name": "After Collection",
+      "movies": [
+        {
+          "id": 537915,
+          "title": "After"
+        },
+        {
+          "id": 613504,
+          "title": "After We Collided"
+        },
+        {
+          "id": 744275,
+          "title": "After We Fell"
+        },
+        {
+          "id": 744276,
+          "title": "After Ever Happy"
+        },
+        {
+          "id": 820525,
+          "title": "After Everything"
+        }
+      ]
+    },
+    "1504372": {
+      "id": 1504372,
+      "name": "Lilo & Stitch (Live-Action) Collection",
+      "movies": [
+        {
+          "id": 552524,
+          "title": "Lilo & Stitch"
+        },
+        {
+          "id": 1504349,
+          "title": "Lilo & Stitch 2"
+        }
+      ]
+    },
+    "8864": {
+      "id": 8864,
+      "name": "Final Destination Collection",
+      "movies": [
+        {
+          "id": 9286,
+          "title": "Final Destination 3"
+        },
+        {
+          "id": 9358,
+          "title": "Final Destination 2"
+        },
+        {
+          "id": 9532,
+          "title": "Final Destination"
+        },
+        {
+          "id": 19912,
+          "title": "The Final Destination"
+        },
+        {
+          "id": 55779,
+          "title": "Final Destination 5"
+        },
+        {
+          "id": 574475,
+          "title": "Final Destination Bloodlines"
+        },
+        {
+          "id": 1505252,
+          "title": "Final Destination 7"
+        }
+      ]
+    },
+    "87359": {
+      "id": 87359,
+      "name": "Mission: Impossible Collection",
+      "movies": [
+        {
+          "id": 954,
+          "title": "Mission: Impossible"
+        },
+        {
+          "id": 955,
+          "title": "Mission: Impossible II"
+        },
+        {
+          "id": 956,
+          "title": "Mission: Impossible III"
+        },
+        {
+          "id": 56292,
+          "title": "Mission: Impossible - Ghost Protocol"
+        },
+        {
+          "id": 177677,
+          "title": "Mission: Impossible - Rogue Nation"
+        },
+        {
+          "id": 353081,
+          "title": "Mission: Impossible - Fallout"
+        },
+        {
+          "id": 575264,
+          "title": "Mission: Impossible - Dead Reckoning Part One"
+        },
+        {
+          "id": 575265,
+          "title": "Mission: Impossible - The Final Reckoning"
+        }
+      ]
+    },
+    "404609": {
+      "id": 404609,
+      "name": "John Wick Collection",
+      "movies": [
+        {
+          "id": 245891,
+          "title": "John Wick"
+        },
+        {
+          "id": 324552,
+          "title": "John Wick: Chapter 2"
+        },
+        {
+          "id": 458156,
+          "title": "John Wick: Chapter 3 - Parabellum"
+        },
+        {
+          "id": 603692,
+          "title": "John Wick: Chapter 4"
+        }
+      ]
+    },
+    "1449595": {
+      "id": 1449595,
+      "name": "Ne Zha Collection",
+      "movies": [
+        {
+          "id": 615453,
+          "title": "Ne Zha"
+        },
+        {
+          "id": 980477,
+          "title": "Ne Zha 2"
+        },
+        {
+          "id": 1455414,
+          "title": "Ne Zha 3"
+        },
+        {
+          "id": 635389,
+          "title": "Jiang Ziya"
+        }
+      ]
+    },
+    "925155": {
+      "id": 925155,
+      "name": "Demon Slayer: Kimetsu no Yaiba Collection",
+      "movies": [
+        {
+          "id": 635302,
+          "title": "Demon Slayer -Kimetsu no Yaiba- The Movie: Mugen Train"
+        },
+        {
+          "id": 1311031,
+          "title": "Demon Slayer: Kimetsu no Yaiba Infinity Castle"
+        },
+        {
+          "id": 1311034,
+          "title": "Demon Slayer: Kimetsu no Yaiba - Infinity Castle 2"
+        },
+        {
+          "id": 1311035,
+          "title": "Demon Slayer: Kimetsu no Yaiba - Infinity Castle 3"
+        }
+      ]
+    },
+    "1197140": {
+      "id": 1197140,
+      "name": "The Black Phone Collection",
+      "movies": [
+        {
+          "id": 756999,
+          "title": "The Black Phone"
+        },
+        {
+          "id": 1197137,
+          "title": "Black Phone 2"
+        }
+      ]
+    },
+    "506940": {
+      "id": 506940,
+      "name": "Baaghi Collection",
+      "movies": [
+        {
+          "id": 391629,
+          "title": "Baaghi"
+        },
+        {
+          "id": 496316,
+          "title": "Baaghi 2"
+        },
+        {
+          "id": 594669,
+          "title": "Baaghi 3"
+        },
+        {
+          "id": 758923,
+          "title": "Baaghi 4"
+        }
+      ]
+    },
+    "762512": {
+      "id": 762512,
+      "name": "The Lion King (Reboot) Collection",
+      "movies": [
+        {
+          "id": 420818,
+          "title": "The Lion King"
+        },
+        {
+          "id": 762509,
+          "title": "Mufasa: The Lion King"
+        }
+      ]
+    },
+    "131295": {
+      "id": 131295,
+      "name": "Captain America Collection",
+      "movies": [
+        {
+          "id": 100402,
+          "title": "Captain America: The Winter Soldier"
+        },
+        {
+          "id": 271110,
+          "title": "Captain America: Civil War"
+        },
+        {
+          "id": 1771,
+          "title": "Captain America: The First Avenger"
+        },
+        {
+          "id": 822119,
+          "title": "Captain America: Brave New World"
+        }
+      ]
+    },
+    "1539140": {
+      "id": 1539140,
+      "name": "Godzilla x Kong Collection",
+      "movies": [
+        {
+          "id": 823464,
+          "title": "Godzilla x Kong: The New Empire"
+        },
+        {
+          "id": 1288438,
+          "title": "Godzilla x Kong: Supernova"
+        }
+      ]
+    },
+    "829561": {
+      "id": 829561,
+      "name": "365 Days Collection",
+      "movies": [
+        {
+          "id": 664413,
+          "title": "365 Days"
+        },
+        {
+          "id": 829557,
+          "title": "365 Days: This Day"
+        },
+        {
+          "id": 829560,
+          "title": "The Next 365 Days"
+        }
+      ]
+    },
+    "1440784": {
+      "id": 1440784,
+      "name": "The Beekeeper Collection",
+      "movies": [
+        {
+          "id": 866398,
+          "title": "The Beekeeper"
+        },
+        {
+          "id": 1440769,
+          "title": "The Beekeeper 2"
+        }
+      ]
+    },
+    "1072703": {
+      "id": 1072703,
+      "name": "Furioza Collection",
+      "movies": [
+        {
+          "id": 866678,
+          "title": "Furioza"
+        },
+        {
+          "id": 1072699,
+          "title": "Inside Furioza"
+        },
+        {
+          "id": 1563665,
+          "title": "Furioza 3"
+        }
+      ]
+    },
+    "870339": {
+      "id": 870339,
+      "name": "The Accountant Collection",
+      "movies": [
+        {
+          "id": 302946,
+          "title": "The Accountant"
+        },
+        {
+          "id": 870028,
+          "title": "The Accountant\u00b2"
+        }
+      ]
+    },
+    "558216": {
+      "id": 558216,
+      "name": "Venom Collection",
+      "movies": [
+        {
+          "id": 580489,
+          "title": "Venom: Let There Be Carnage"
+        },
+        {
+          "id": 335983,
+          "title": "Venom"
+        },
+        {
+          "id": 912649,
+          "title": "Venom: The Last Dance"
+        }
+      ]
+    },
+    "720879": {
+      "id": 720879,
+      "name": "Sonic the Hedgehog Collection",
+      "movies": [
+        {
+          "id": 675353,
+          "title": "Sonic the Hedgehog 2"
+        },
+        {
+          "id": 454626,
+          "title": "Sonic the Hedgehog"
+        },
+        {
+          "id": 939243,
+          "title": "Sonic the Hedgehog 3"
+        },
+        {
+          "id": 1401586,
+          "title": "Sonic the Hedgehog 4"
+        }
+      ]
+    },
+    "1434946": {
+      "id": 1434946,
+      "name": "Alien: Romulus Collection",
+      "movies": [
+        {
+          "id": 1434936,
+          "title": "Untitled Alien: Romulus Sequel"
+        },
+        {
+          "id": 945961,
+          "title": "Alien: Romulus"
+        }
+      ]
+    },
+    "1461530": {
+      "id": 1461530,
+      "name": "The Minecraft Movie Collection",
+      "movies": [
+        {
+          "id": 950387,
+          "title": "A Minecraft Movie"
+        },
+        {
+          "id": 1461519,
+          "title": "A Minecraft Movie 2"
+        }
+      ]
+    },
+    "1129084": {
+      "id": 1129084,
+      "name": "Nobody Collection",
+      "movies": [
+        {
+          "id": 615457,
+          "title": "Nobody"
+        },
+        {
+          "id": 1007734,
+          "title": "Nobody 2"
+        }
+      ]
+    },
+    "1156666": {
+      "id": 1156666,
+      "name": "Fault Collection",
+      "movies": [
+        {
+          "id": 1010581,
+          "title": "My Fault"
+        },
+        {
+          "id": 1156593,
+          "title": "Your Fault"
+        },
+        {
+          "id": 1156594,
+          "title": "Our Fault"
+        }
+      ]
+    },
+    "1172926": {
+      "id": 1172926,
+      "name": "The Strangers (Remake) Collection",
+      "movies": [
+        {
+          "id": 1010600,
+          "title": "The Strangers: Chapter 1"
+        },
+        {
+          "id": 1010756,
+          "title": "The Strangers: Chapter 2"
+        },
+        {
+          "id": 1010755,
+          "title": "The Strangers: Chapter 3"
+        }
+      ]
+    },
+    "8580": {
+      "id": 8580,
+      "name": "The Karate Kid Collection",
+      "movies": [
+        {
+          "id": 1885,
+          "title": "The Karate Kid"
+        },
+        {
+          "id": 8856,
+          "title": "The Karate Kid Part II"
+        },
+        {
+          "id": 10495,
+          "title": "The Karate Kid Part III"
+        },
+        {
+          "id": 11231,
+          "title": "The Next Karate Kid"
+        },
+        {
+          "id": 1011477,
+          "title": "Karate Kid: Legends"
+        },
+        {
+          "id": 38575,
+          "title": "The Karate Kid"
+        }
+      ]
+    },
+    "77816": {
+      "id": 77816,
+      "name": "Kung Fu Panda Collection",
+      "movies": [
+        {
+          "id": 9502,
+          "title": "Kung Fu Panda"
+        },
+        {
+          "id": 49444,
+          "title": "Kung Fu Panda 2"
+        },
+        {
+          "id": 140300,
+          "title": "Kung Fu Panda 3"
+        },
+        {
+          "id": 1011985,
+          "title": "Kung Fu Panda 4"
+        }
+      ]
+    },
+    "1363124": {
+      "id": 1363124,
+      "name": "The Family Plan Collection",
+      "movies": [
+        {
+          "id": 1029575,
+          "title": "The Family Plan"
+        },
+        {
+          "id": 1363123,
+          "title": "The Family Plan 2"
+        }
+      ]
+    },
+    "727761": {
+      "id": 727761,
+      "name": "Terrifier Collection",
+      "movies": [
+        {
+          "id": 420634,
+          "title": "Terrifier"
+        },
+        {
+          "id": 663712,
+          "title": "Terrifier 2"
+        },
+        {
+          "id": 1034541,
+          "title": "Terrifier 3"
+        },
+        {
+          "id": 1320786,
+          "title": "Terrifier 4"
+        }
+      ]
+    },
+    "1540907": {
+      "id": 1540907,
+      "name": "Superman (DCU) Collection",
+      "movies": [
+        {
+          "id": 1061474,
+          "title": "Superman"
+        },
+        {
+          "id": 1523140,
+          "title": "Man of Tomorrow"
+        }
+      ]
+    },
+    "1071588": {
+      "id": 1071588,
+      "name": "M3GAN Collection",
+      "movies": [
+        {
+          "id": 536554,
+          "title": "M3GAN"
+        },
+        {
+          "id": 1071585,
+          "title": "M3GAN 2.0"
+        }
+      ]
+    },
+    "1531466": {
+      "id": 1531466,
+      "name": "Weapons Collection",
+      "movies": [
+        {
+          "id": 1078605,
+          "title": "Weapons"
+        },
+        {
+          "id": 1529266,
+          "title": "Untitled Weapons Prequel"
+        }
+      ]
+    },
+    "3601": {
+      "id": 3601,
+      "name": "I Know What You Did Last Summer Collection",
+      "movies": [
+        {
+          "id": 3597,
+          "title": "I Know What You Did Last Summer"
+        },
+        {
+          "id": 3600,
+          "title": "I Still Know What You Did Last Summer"
+        },
+        {
+          "id": 3602,
+          "title": "I'll Always Know What You Did Last Summer"
+        },
+        {
+          "id": 1083433,
+          "title": "I Know What You Did Last Summer"
+        }
+      ]
+    },
+    "1458864": {
+      "id": 1458864,
+      "name": "How to Train Your Dragon (Live-Action) Collection",
+      "movies": [
+        {
+          "id": 1087192,
+          "title": "How to Train Your Dragon"
+        },
+        {
+          "id": 1458319,
+          "title": "How to Train Your Dragon 2"
+        }
+      ]
+    },
+    "1100788": {
+      "id": 1100788,
+      "name": "Smile Collection",
+      "movies": [
+        {
+          "id": 882598,
+          "title": "Smile"
+        },
+        {
+          "id": 1100782,
+          "title": "Smile 2"
+        }
+      ]
+    },
+    "1565": {
+      "id": 1565,
+      "name": "28 Days/Weeks/Years Later Collection",
+      "movies": [
+        {
+          "id": 170,
+          "title": "28 Days Later"
+        },
+        {
+          "id": 1562,
+          "title": "28 Weeks Later"
+        },
+        {
+          "id": 1100988,
+          "title": "28 Years Later"
+        },
+        {
+          "id": 1272837,
+          "title": "28 Years Later: The Bone Temple"
+        },
+        {
+          "id": 1273002,
+          "title": "28 Years Later Part 3"
+        }
+      ]
+    },
+    "485645": {
+      "id": 485645,
+      "name": "YRF Spy Universe",
+      "movies": [
+        {
+          "id": 85985,
+          "title": "Ek Tha Tiger"
+        },
+        {
+          "id": 441909,
+          "title": "Tiger Zinda Hai"
+        },
+        {
+          "id": 720557,
+          "title": "Tiger 3"
+        },
+        {
+          "id": 1106479,
+          "title": "Tiger vs. Pathaan"
+        },
+        {
+          "id": 585268,
+          "title": "War"
+        },
+        {
+          "id": 864692,
+          "title": "Pathaan"
+        },
+        {
+          "id": 1109086,
+          "title": "War 2"
+        },
+        {
+          "id": 1122030,
+          "title": "Alpha"
+        },
+        {
+          "id": 1247526,
+          "title": "Pathaan II"
+        }
+      ]
+    },
+    "1119879": {
+      "id": 1119879,
+      "name": "Ice Road Collection",
+      "movies": [
+        {
+          "id": 646207,
+          "title": "The Ice Road"
+        },
+        {
+          "id": 1119878,
+          "title": "Ice Road: Vengeance"
+        }
+      ]
+    },
+    "1125292": {
+      "id": 1125292,
+      "name": "Freaky Friday Collection",
+      "movies": [
+        {
+          "id": 10330,
+          "title": "Freaky Friday"
+        },
+        {
+          "id": 1125257,
+          "title": "Freakier Friday"
+        }
+      ]
+    },
+    "1231053": {
+      "id": 1231053,
+      "name": "The Bad Guys Collection",
+      "movies": [
+        {
+          "id": 629542,
+          "title": "The Bad Guys"
+        },
+        {
+          "id": 1175942,
+          "title": "The Bad Guys 2"
+        }
+      ]
+    },
+    "1370345": {
+      "id": 1370345,
+      "name": "The Wild Robot Collection",
+      "movies": [
+        {
+          "id": 1184918,
+          "title": "The Wild Robot"
+        },
+        {
+          "id": 1370190,
+          "title": "The Wild Robot Escapes"
+        }
+      ]
+    },
+    "1407785": {
+      "id": 1407785,
+      "name": "Marco Collection",
+      "movies": [
+        {
+          "id": 573257,
+          "title": "Mikhael"
+        },
+        {
+          "id": 1186350,
+          "title": "Marco"
+        },
+        {
+          "id": 1413491,
+          "title": "Marco 2"
+        }
+      ]
+    },
+    "1567895": {
+      "id": 1567895,
+      "name": "Maddock Horror Comedy Universe",
+      "movies": [
+        {
+          "id": 1112426,
+          "title": "Stree 2"
+        },
+        {
+          "id": 533991,
+          "title": "Stree"
+        },
+        {
+          "id": 1374067,
+          "title": "Stree 3"
+        },
+        {
+          "id": 799177,
+          "title": "Bhediya"
+        },
+        {
+          "id": 1112424,
+          "title": "Bhediya 2:  The Beginning of End"
+        },
+        {
+          "id": 1187058,
+          "title": "Munjya"
+        },
+        {
+          "id": 1196364,
+          "title": "Thamma"
+        },
+        {
+          "id": 1382950,
+          "title": "Maha Munjya"
+        },
+        {
+          "id": 1411089,
+          "title": "Shakti Shalini"
+        },
+        {
+          "id": 1411093,
+          "title": "Pehla Mahayudh"
+        },
+        {
+          "id": 1411095,
+          "title": "Doosara Mahayudh"
+        },
+        {
+          "id": 1411090,
+          "title": "Chamunda"
+        }
+      ]
+    },
+    "328": {
+      "id": 328,
+      "name": "Jurassic Park Collection",
+      "movies": [
+        {
+          "id": 329,
+          "title": "Jurassic Park"
+        },
+        {
+          "id": 330,
+          "title": "The Lost World: Jurassic Park"
+        },
+        {
+          "id": 331,
+          "title": "Jurassic Park III"
+        },
+        {
+          "id": 135397,
+          "title": "Jurassic World"
+        },
+        {
+          "id": 351286,
+          "title": "Jurassic World: Fallen Kingdom"
+        },
+        {
+          "id": 507086,
+          "title": "Jurassic World Dominion"
+        },
+        {
+          "id": 1234821,
+          "title": "Jurassic World Rebirth"
+        }
+      ]
+    },
+    "1241984": {
+      "id": 1241984,
+      "name": "Moana Collection",
+      "movies": [
+        {
+          "id": 277834,
+          "title": "Moana"
+        },
+        {
+          "id": 1241982,
+          "title": "Moana 2"
+        }
+      ]
+    },
+    "399": {
+      "id": 399,
+      "name": "Predator Collection",
+      "movies": [
+        {
+          "id": 106,
+          "title": "Predator"
+        },
+        {
+          "id": 169,
+          "title": "Predator 2"
+        },
+        {
+          "id": 34851,
+          "title": "Predators"
+        },
+        {
+          "id": 346910,
+          "title": "The Predator"
+        },
+        {
+          "id": 766507,
+          "title": "Prey"
+        },
+        {
+          "id": 1242898,
+          "title": "Predator: Badlands"
+        }
+      ]
+    },
+    "1262375": {
+      "id": 1262375,
+      "name": "Butchers Collection",
+      "movies": [
+        {
+          "id": 720026,
+          "title": "Butchers"
+        },
+        {
+          "id": 1244039,
+          "title": "Butchers Book Two: Raghorn"
+        },
+        {
+          "id": 1359482,
+          "title": "Butchers Book Three: Bonesaw"
+        }
+      ]
+    },
+    "1546075": {
+      "id": 1546075,
+      "name": "Kill Boksoon Collection",
+      "movies": [
+        {
+          "id": 849869,
+          "title": "Kill Boksoon"
+        },
+        {
+          "id": 1267319,
+          "title": "Mantis"
+        }
+      ]
+    },
+    "925006": {
+      "id": 925006,
+      "name": "Downton Abbey Collection",
+      "movies": [
+        {
+          "id": 535544,
+          "title": "Downton Abbey"
+        },
+        {
+          "id": 820446,
+          "title": "Downton Abbey: A New Era"
+        },
+        {
+          "id": 1289936,
+          "title": "Downton Abbey: The Grand Finale"
+        }
+      ]
+    },
+    "1477387": {
+      "id": 1477387,
+      "name": "Fault: London Collection",
+      "movies": [
+        {
+          "id": 1294203,
+          "title": "My Fault: London"
+        },
+        {
+          "id": 1477319,
+          "title": "Our Fault: London"
+        },
+        {
+          "id": 1477317,
+          "title": "Your Fault: London"
+        }
+      ]
+    },
+    "207621": {
+      "id": 207621,
+      "name": "V/H/S Collection",
+      "movies": [
+        {
+          "id": 84348,
+          "title": "V/H/S"
+        },
+        {
+          "id": 159117,
+          "title": "V/H/S/2"
+        },
+        {
+          "id": 267806,
+          "title": "V/H/S: Viral"
+        },
+        {
+          "id": 753453,
+          "title": "V/H/S/94"
+        },
+        {
+          "id": 1005776,
+          "title": "V/H/S/99"
+        },
+        {
+          "id": 1032948,
+          "title": "V/H/S/85"
+        },
+        {
+          "id": 1190868,
+          "title": "V/H/S/Beyond"
+        },
+        {
+          "id": 1373445,
+          "title": "V/H/S/Halloween"
+        }
+      ]
+    },
+    "1443223": {
+      "id": 1443223,
+      "name": "The Pursuit of Lust Collection",
+      "movies": [
+        {
+          "id": 1422211,
+          "title": "The Pursuit of Lust"
+        },
+        {
+          "id": 1431185,
+          "title": "The Pursuit of Lust 2"
+        },
+        {
+          "id": 1433371,
+          "title": "The Pursuit of Lust 3"
+        },
+        {
+          "id": 1445981,
+          "title": "The Pursuit of Lust 4"
+        },
+        {
+          "id": 1454308,
+          "title": "The Pursuit of Lust 5"
+        }
+      ]
+    },
+    "717062": {
+      "id": 717062,
+      "name": "Gatao Collection",
+      "movies": [
+        {
+          "id": 377579,
+          "title": "Gatao"
+        },
+        {
+          "id": 506053,
+          "title": "Gatao 2: Rise of the King"
+        },
+        {
+          "id": 779221,
+          "title": "Gatao: The Last Stray"
+        },
+        {
+          "id": 1303236,
+          "title": "GATAO: Like Father Like Son"
+        },
+        {
+          "id": 1468057,
+          "title": "GATAO: Big Brothers"
+        }
+      ]
+    }
+  }
+}
