@@ -1,6 +1,12 @@
 import requests
 import base64
 
+
+# CONSTANTS
+DEFAULT_TIMEOUT = 30
+SUCCESS_CODES = (200, 201, 204)
+
+
 class Jellyfin:
     def __init__(self, base_url, api_key, dry_run=False, logger=None):
         self.base = base_url.rstrip("/")
@@ -8,31 +14,39 @@ class Jellyfin:
         self.dry_run = dry_run
         self.logger = logger
 
+    
+    # Logging helper
     def _log(self, msg):
         if self.logger:
             self.logger(msg)
         else:
             print(msg)
 
+    
+    # Internal header helper
     def _headers(self):
         return {
             "X-Emby-Token": self.key,
-            "Accept": "application/json"
+            "Accept": "application/json",
         }
 
+    
+    # GET wrapper
     def get(self, path, params=None):
         r = requests.get(
             f"{self.base}{path}",
             headers=self._headers(),
             params=params,
-            timeout=30
+            timeout=DEFAULT_TIMEOUT,
         )
         r.raise_for_status()
         return r.json()
 
+    
+    # POST wrapper
     def post(self, path, params=None, json=None):
         if self.dry_run:
-            self._log(f"[DRY RUN] POST -> {path} params={params}")
+            self._log(f"[DRY RUN] POST {path} params={params}")
             return None
 
         r = requests.post(
@@ -40,10 +54,10 @@ class Jellyfin:
             headers=self._headers(),
             params=params,
             json=json,
-            timeout=30
+            timeout=DEFAULT_TIMEOUT,
         )
 
-        if r.status_code not in (200, 201, 204):
+        if r.status_code not in SUCCESS_CODES:
             r.raise_for_status()
 
         try:
@@ -51,37 +65,32 @@ class Jellyfin:
         except Exception:
             return None
 
+    
+    # Image upload (Base64 body, proper Content-Type)
     def upload_image(self, item_id, img_type, img_bytes):
         if self.dry_run:
-            self._log(f"[DRY RUN] Would upload poster for item {item_id}")
+            self._log(f"[DRY RUN] Would upload image for item {item_id}")
             return
 
-        # Endpoint: /Items/{itemId}/Images/{imageType}
         url = f"{self.base}/Items/{item_id}/Images/{img_type}"
-
-        # Jellyfin devs: body should be BASE64 string, not binary
         b64_data = base64.b64encode(img_bytes).decode("ascii")
 
         headers = {
             "X-Emby-Token": self.key,
-            # Use an explicit, concrete image type, not "image/*"
-            # TMDb posters are JPEG, so image/jpeg is appropriate here
             "Content-Type": "image/jpeg",
         }
 
         try:
-            r = requests.post(url, headers=headers, data=b64_data, timeout=30)
+            r = requests.post(url, headers=headers, data=b64_data, timeout=DEFAULT_TIMEOUT)
         except Exception as e:
             self._log(f"Poster upload failed (request error): {e}")
             return
 
-        if r.status_code not in (200, 204):
-            # Show status + body so we can see what Jellyfin complains about
+        if r.status_code not in SUCCESS_CODES:
             self._log(f"Poster upload failed: {r.status_code} {r.text}")
 
-
-    # ---------- High-level wrapper functions ----------
-
+    
+    # High-level wrappers
     def list_users(self):
         return self.get("/Users")
 
@@ -103,13 +112,11 @@ class Jellyfin:
                     "UserId": user_id,
                 },
             )
-
             chunk = d.get("Items", [])
             if not chunk:
                 break
 
             movies.extend(chunk)
-
             if len(chunk) < size:
                 break
 
