@@ -25,7 +25,7 @@ INVALID_FILENAME_CHARS = re.compile(r'[:<>"/\\|?*]')
 CURRENT_YEAR = datetime.now().year
 
 DEFAULT_DRY_RUN = True
-DEFAULT_OFFLINE = True  # note: README should match this if you keep it
+DEFAULT_OFFLINE = True
 DEFAULT_JELLYSEERR = False
 
 # ENV + LOGGING
