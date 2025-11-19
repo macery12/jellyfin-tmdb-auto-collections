@@ -1,4 +1,3 @@
-
 import os
 import sys
 import time
@@ -7,6 +6,8 @@ import logging
 import re
 import argparse
 from datetime import datetime
+from typing import Any, Dict, List, Optional
+from pathlib import Path
 
 from dotenv import load_dotenv
 
@@ -16,7 +17,7 @@ from utils.display import Display
 from utils.jellyseer import JellyseerrClient
 
 # CONSTANTS
-LOG_DIR = "logs"
+LOG_DIR = Path("logs")
 LOG_FILE_TEMPLATE = "auto_collections_{timestamp}.log"
 
 MIN_MOVIES = 2
@@ -24,32 +25,33 @@ INVALID_FILENAME_CHARS = re.compile(r'[:<>"/\\|?*]')
 CURRENT_YEAR = datetime.now().year
 
 DEFAULT_DRY_RUN = True
-DEFAULT_OFFLINE = True
+DEFAULT_OFFLINE = True  # note: README should match this if you keep it
 DEFAULT_JELLYSEERR = False
 
 # ENV + LOGGING
 load_dotenv()
 
-os.makedirs(LOG_DIR, exist_ok=True)
+LOG_DIR.mkdir(parents=True, exist_ok=True)
+
 TIMESTAMP = time.strftime("%Y%m%d_%H%M%S")
-LOG_FILE = os.path.join(LOG_DIR, LOG_FILE_TEMPLATE.format(timestamp=TIMESTAMP))
+LOG_FILE = LOG_DIR / LOG_FILE_TEMPLATE.format(timestamp=TIMESTAMP)
 
 logging.basicConfig(
-    filename=LOG_FILE,
+    filename=str(LOG_FILE),
     filemode="a",
     format="%(asctime)s [%(levelname)s] %(message)s",
     level=logging.INFO,
 )
 log = logging.getLogger("jf")
 
-def out(msg):
+
+def out(msg: str) -> None:
     print(msg)
     log.info(msg)
 
 
-
 # ARGPARSE
-def parse_args():
+def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Jellyfin TMDb Auto Collection Builder")
 
     parser.add_argument("--dry-run", dest="dry_run", action="store_true", help="Perform checks only (default)")
@@ -74,8 +76,6 @@ ARGS = parse_args()
 DRY_RUN = ARGS.dry_run
 OFFLINE_MODE = ARGS.offline
 
-
-
 # ENV VARS
 JELLYFIN_URL = os.getenv("JELLYFIN_URL", "").rstrip("/")
 JELLYFIN_API_KEY = os.getenv("JELLYFIN_API_KEY")
@@ -92,17 +92,15 @@ if not OFFLINE_MODE and not TMDB_API_KEY:
     out("TMDB_API_KEY required in online mode")
     sys.exit(1)
 
-USE_JELLYSEERR = (
-    ARGS.jellyseerr and JELLYSEERR_URL and JELLYSEERR_API_KEY
-)
-
+USE_JELLYSEERR = ARGS.jellyseerr and JELLYSEERR_URL and JELLYSEERR_API_KEY
 
 
 # HELPERS
-def clean_filename(s):
+def clean_filename(s: str) -> str:
     return re.sub(r"\s+", " ", INVALID_FILENAME_CHARS.sub(" ", s)).strip()
 
-def get_tmdb_id(item):
+
+def get_tmdb_id(item: Dict[str, Any]) -> Optional[int]:
     """Extract TMDb ID reliably from a Jellyfin item."""
     p = item.get("ProviderIds") or {}
     tid = p.get("Tmdb") or p.get("tmdb") or p.get("TMDB")
@@ -110,8 +108,20 @@ def get_tmdb_id(item):
         return None
     try:
         return int(tid)
-    except:
+    except Exception as e:
+        log.debug(f"Invalid TMDb ID on item: {tid} ({e})")
         return None
+
+
+def build_tmdb_map(movies: List[Dict[str, Any]]) -> Dict[int, str]:
+    """Build a TMDb ID -> Jellyfin item ID map."""
+    mapping: Dict[int, str] = {}
+    for m in movies:
+        tid = get_tmdb_id(m)
+        if tid is not None:
+            mapping[tid] = m["Id"]
+    return mapping
+
 
 # CLIENTS
 display = Display(logger=out)
@@ -120,37 +130,41 @@ tmdb = TMDb(TMDB_API_KEY, offline_mode=OFFLINE_MODE, logger=out)
 
 JELLYSEERR_CLIENT = JellyseerrClient(JELLYSEERR_URL, JELLYSEERR_API_KEY) if USE_JELLYSEERR else None
 
+
 # USER SELECTION
-def ensure_user_id():
+def ensure_user_id() -> str:
     users = jf.list_users()
     for u in users:
         if not u.get("IsDisabled"):
             return u["Id"]
     raise RuntimeError("No valid Jellyfin users found")
 
+
 # OFFLINE METADATA
-def load_offline_collections():
-    path = os.path.join("metadata", "collections.json")
-    if not os.path.exists(path):
+def load_offline_collections() -> Dict[str, Any]:
+    metadata_path = Path("metadata") / "collections.json"
+    if not metadata_path.exists():
         out("metadata/collections.json missing (offline mode)")
         sys.exit(1)
 
-    with open(path, "r", encoding="utf-8") as f:
-        return {str(cid): entry for cid, entry in json.load(f).get("collections", {}).items()}
+    with metadata_path.open("r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    return {str(cid): entry for cid, entry in data.get("collections", {}).items()}
 
 
 # BUILD COLLECTIONS (OFFLINE)
-def build_collections_offline(movies, tmdb_to_jf):
+def build_collections_offline(movies: List[Dict[str, Any]], tmdb_to_jf: Dict[int, str]) -> Dict[str, Any]:
     display.progress("Building collections (offline)...")
     offline = load_offline_collections()
-    results = {}
+    results: Dict[str, Any] = {}
 
     for cid, entry in offline.items():
         cname = entry.get("name", f"Collection {cid}")
         parts = entry.get("movies", [])
 
-        matched = []
-        all_tmdb = []
+        matched: List[str] = []
+        all_tmdb: List[int] = []
 
         for m in parts:
             mid = m["id"]
@@ -170,6 +184,7 @@ def build_collections_offline(movies, tmdb_to_jf):
 
     return results
 
+
 # BUILD COLLECTIONS (ONLINE)
 def build_collections_online(movies, tmdb_to_jf):
     display.progress("Building collections (online)...")
@@ -177,6 +192,7 @@ def build_collections_online(movies, tmdb_to_jf):
     mapping = {}
     total = len(movies)
 
+    # first pass: map movies -> collections
     for idx, m in enumerate(movies, start=1):
         display.tmdb_progress(idx, total)
 
@@ -198,7 +214,12 @@ def build_collections_online(movies, tmdb_to_jf):
 
     result = {}
 
-    for cid, d in mapping.items():
+    # second pass: expand each collection via TMDb
+    total_collections = len(mapping)
+
+    for idx, (cid, d) in enumerate(mapping.items(), start=1):
+        display.progress(f"Fetching collection {idx}/{total_collections} (TMDb {cid})")
+
         parts = tmdb.get(f"/collection/{cid}") or {}
         items = parts.get("parts", [])
 
@@ -209,7 +230,7 @@ def build_collections_online(movies, tmdb_to_jf):
             if i.get("id")
         ]
 
-        matched = set(x for x in all_tmdb if x in tmdb_to_jf)
+        matched = {x for x in all_tmdb if x in tmdb_to_jf}
 
         if len(d["ids"]) >= MIN_MOVIES:
             result[cid] = {
@@ -223,8 +244,10 @@ def build_collections_online(movies, tmdb_to_jf):
 
     return result
 
+
+
 # JELLYSEERR MISSING MOVIES
-def process_missing(collections):
+def process_missing(collections: Dict[str, Any]) -> int:
     if not (USE_JELLYSEERR and JELLYSEERR_CLIENT):
         return 0
 
@@ -238,14 +261,14 @@ def process_missing(collections):
             tmdb_id = movie["id"]
             title = movie["title"]
 
-            release_year = None
+            release_year: Optional[int] = None
             try:
                 details = JELLYSEERR_CLIENT.movie_details(tmdb_id)
                 rd = details.get("releaseDate") or details.get("release_date")
                 if rd:
                     release_year = int(str(rd)[:4])
-            except:
-                pass
+            except Exception as e:
+                out(f"Jellyseerr details error for {title} (TMDb {tmdb_id}): {e}")
 
             if release_year and release_year > CURRENT_YEAR:
                 out(f"Skipping unreleased movie {title} (TMDb {tmdb_id}, {release_year})")
@@ -263,12 +286,15 @@ def process_missing(collections):
 
     return count
 
+
 # MAIN
-def main():
+def main() -> None:
     print("\n=== Jellyfin TMDb Auto Collection Builder ===")
-    print(f"Mode: {'OFFLINE' if OFFLINE_MODE else 'ONLINE'} | "
-          f"Dry run: {DRY_RUN} | "
-          f"Jellyseerr: {USE_JELLYSEERR}\n")
+    print(
+        f"Mode: {'OFFLINE' if OFFLINE_MODE else 'ONLINE'} | "
+        f"Dry run: {DRY_RUN} | "
+        f"Jellyseerr: {USE_JELLYSEERR}\n"
+    )
 
     user_id = ensure_user_id()
 
@@ -276,11 +302,7 @@ def main():
     movies = jf.get_movies(user_id)
     total_movies = len(movies)
 
-    tmdb_to_jf = {}
-    for m in movies:
-        tid = get_tmdb_id(m)
-        if tid:
-            tmdb_to_jf[tid] = m["Id"]
+    tmdb_to_jf = build_tmdb_map(movies)
 
     collections = (
         build_collections_offline(movies, tmdb_to_jf)

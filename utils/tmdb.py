@@ -1,3 +1,4 @@
+from pathlib import Path
 import time
 import json
 import requests
@@ -7,7 +8,7 @@ DEFAULT_LANGUAGE = "en-US"
 DEFAULT_CACHE = "tmdb_cache.json"
 
 DEFAULT_TIMEOUT = 5
-CALL_INTERVAL_SECONDS = 0.2  # space out TMDb calls by 0.5s
+CALL_INTERVAL_SECONDS = 0.25   # spacing between TMDb calls
 
 
 class TMDb:
@@ -21,47 +22,46 @@ class TMDb:
     ):
         self.api_key = api_key
         self.language = language
-        self.cache_file = cache_file
+        self.cache_file = Path(cache_file)
         self.logger = logger
         self.offline_mode = offline_mode
 
         self._last_call_ts = 0.0
 
         try:
-            with open(cache_file, "r", encoding="utf-8") as f:
+            with self.cache_file.open("r", encoding="utf-8") as f:
                 self.cache = json.load(f)
         except Exception:
             self.cache = {}
 
-    # Helpers
+    # log helper
     def _log(self, msg):
         if self.logger:
             self.logger(msg)
         else:
             print(msg)
 
+    # save cache file
     def _save_cache(self):
         try:
-            with open(self.cache_file, "w", encoding="utf-8") as f:
+            with self.cache_file.open("w", encoding="utf-8") as f:
                 json.dump(self.cache, f, indent=2)
         except Exception as e:
             self._log(f"TMDb cache save failed: {e}")
 
+    # spacing between TMDb calls
     def _wait_interval(self):
-        """Ensure at least CALL_INTERVAL_SECONDS between remote requests."""
         now = time.time()
         delta = now - self._last_call_ts
         if delta < CALL_INTERVAL_SECONDS:
-            sleep_time = CALL_INTERVAL_SECONDS - delta
-            time.sleep(sleep_time)
+            time.sleep(CALL_INTERVAL_SECONDS - delta)
         self._last_call_ts = time.time()
 
-    # JSON GET with cache
+    # GET with caching
     def get(self, path, movie_name="", tmdb_id=""):
         if self.offline_mode:
             return None
 
-        # Use cache if present
         if path in self.cache:
             return self.cache[path]
 
@@ -90,6 +90,7 @@ class TMDb:
                 r.raise_for_status()
                 data = r.json()
 
+                # only cache successful responses
                 self.cache[path] = data
                 self._save_cache()
                 return data
@@ -102,11 +103,9 @@ class TMDb:
                 time.sleep(1)
 
         self._log(f"Skipping '{movie_name}' after repeated TMDb failures.")
-        self.cache[path] = None
-        self._save_cache()
         return None
 
-    # Poster fetch 
+    # poster fetch
     def get_poster(self, collection_id):
         data = self.get(f"/collection/{collection_id}")
         if not data:
