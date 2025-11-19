@@ -1,190 +1,94 @@
 # Jellyfin TMDb Auto Collection Builder
 
-A utility that automatically builds accurate movie collections in Jellyfin using TMDb collection data.
-Supports two modes:
+Automatically creates and updates movie collections in Jellyfin using real TMDb collection data.
 
-- **Online Mode** – Uses the TMDb API for live collection data and poster downloads.
-- **Offline Mode** – Uses a single metadata package (no API keys or internet required).
-
----
-
-## TL;DR
-
-- **Purpose:** Match your Jellyfin movie library to real TMDb collections and create/update collections automatically.
-- **Modes:** Online (most accurate) or Offline (fast, no API needed).
-- **Safety:** Fully supports dry-run to preview all changes.
-
----
-
-## Features
-
-- **Online Mode**
-  - Uses TMDb API to pull full, up-to-date collection membership.
-  - Downloads official TMDb collection posters.
-  - Best accuracy for newly released titles or newly created TMDb collections.
-
-- **Offline Mode**
-  - Uses a prebuilt metadata pack located in `metadata/`.
-  - Requires no API key and no internet access.
-  - Ideal for containers, air-gapped servers, and extremely fast rescans.
-
-- **Dry-Run Support**
-  - Shows exactly what would change without modifying Jellyfin.
-
-- **Robust Implementation**
-  - Rate-limited TMDb calls (online mode).
-  - Clean Jellyfin API integration.
-  - Filename sanitization.
-  - Detailed per-run logs stored in `logs/`.
-
----
+This tool:
+- Detects movie collections using TMDb
+- Creates or updates Jellyfin boxsets
+- Downloads posters for collections (online mode)
+- Supports offline mode using local metadata
+- Optionally sends missing movies to Jellyseerr
 
 ## Installation
-
-Clone the repository:
 
 ```bash
 git clone https://github.com/macery12/jellyfin-tmdb-auto-collections
 cd jellyfin-tmdb-auto-collections
-```
-
-Install requirements:
-
-```bash
 pip install -r requirements.txt
 ```
 
----
-
-## Configuration
-
-Create a `.env` file in the project directory:
+Create a `.env` file:
 
 ```
-JELLYFIN_URL=http://yourserver:8096
-JELLYFIN_API_KEY=YOUR_JELLYFIN_KEY
-TMDB_API_KEY=YOUR_TMDB_KEY   # Optional – only needed for online mode
-JELLYFIN_USER_ID=YOUR_USERID # Optional – autodetected if omitted
+JELLYFIN_URL=http://your_jellyfin:8096
+JELLYFIN_API_KEY=YOUR_JF_KEY
+TMDB_API_KEY=YOUR_TMDB_KEY
+JELLYSEERR_URL=http://your_jellyseerr:5055
+JELLYSEERR_API_KEY=YOUR_JS_KEY
 ```
 
----
+TMDB_API_KEY is required for **online** mode.
+Jellyseerr values are optional and only used if enabled via CLI.
 
 ## Usage
 
-Run:
-
+### Default (dry-run)
 ```bash
 python auto_collections.py
 ```
 
-You will be prompted for:
-
-- Dry-run mode
-- Offline or online mode
-
-Examples:
-
-```
-Dry run first? (y/n): y
-Use offline mode (no TMDb calls)? (y/n): y
+### Apply changes
+```bash
+python auto_collections.py --no-dryrun
 ```
 
----
-
-## Offline Mode
-
-Offline mode uses local metadata only:
-
-```
-metadata/
-  collections.json
-  movies.json
+### Online mode (TMDb)
+```bash
+python auto_collections.py --online
 ```
 
-### collections.json
-A full TMDb collection list, expanded and ready for Jellyfin.
-
-### movies.json
-An NDJSON TMDb movie dump:
-
-```
-{"id": 11, "original_title": "Star Wars", "popularity": 50.0}
+### Offline mode
+```bash
+python auto_collections.py --offline
 ```
 
-### Benefits
+### Enable Jellyseerr
+```bash
+python auto_collections.py --jellyseerr
+```
 
-- No API keys  
-- No network delays  
-- No rate limits  
-- Stable and repeatable results  
-- Suitable for offline servers and containers
+### Example: real run + TMDb + Jellyseerr
+```bash
+python auto_collections.py --no-dryrun --online --jellyseerr
+```
 
-*Poster downloads are disabled in offline mode.*
+## Flags
 
----
-
-## Online Mode
-
-Uses TMDb API to:
-
-- Resolve each movie by TMDb ID  
-- Detect actual TMDb collection membership  
-- Pull full collection membership from TMDb  
-- Download and apply posters  
-
-Use this mode if you want the most complete and up-to-date collection data.
-
----
-
-## Dry-Run
-
-Dry-run mode performs a complete pass but does **not** create or modify anything in Jellyfin.
-Useful for checking match accuracy and reviewing the run before applying changes.
-
----
+| Flag | Description |
+|------|-------------|
+| `--dry-run` | Default. Preview changes only. |
+| `--no-dryrun` | Apply changes to Jellyfin. |
+| `--offline` | Use metadata/collections.json instead of TMDb. |
+| `--online` | Use TMDb API (default). |
+| `--jellyseerr` | Enable Jellyseerr requests. |
+| `--no-jellyseerr` | Disable Jellyseerr integration. |
 
 ## Logs
 
-All runs create a timestamped log:
-
+Runs generate log files in:
 ```
 logs/auto_collections_YYYYMMDD_HHMMSS.log
 ```
 
-Includes:
-
-- Every movie scanned  
-- TMDb IDs  
-- Collection matches  
-- Collections created or updated  
-- Poster activity (online mode)  
-- Errors and skipped items  
-
----
-
-## Summary Output (Example)
+## Summary Example
 
 ```
 === SUMMARY ===
-Mode: OFFLINE (metadata)
-Total Jellyfin movies scanned: 418
-Movies with TMDb IDs: 402
-Movies in at least one collection: 265
-Movies with TMDb IDs but no collection: 137
-Collections created: 22
-Collections updated: 14
-Total collections processed: 36
-Log file saved to: logs/auto_collections_20250117_214522.log
+Movies scanned:                 431
+Collections discovered:          21
+Collections created:             18
+Collections updated:              3
+Missing movies detected:         29
+Jellyseerr requests sent:        29
 ```
-
----
-
-
-## Troubleshooting
-
-- **Missing TMDb IDs:** Some Jellyfin items may not have TMDb provider IDs. Add them manually or rescan metadata.
-- **Poster missing (online mode):** Check network/TMDB API key.
-- **429 rate limits (online mode):** The script includes a rate limiter; offline mode avoids this entirely.
-
----
 
