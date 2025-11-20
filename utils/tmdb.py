@@ -1,69 +1,55 @@
-from pathlib import Path
+from __future__ import annotations
+
 import time
-import json
+from typing import Any, Dict, Optional
+
 import requests
+
+from .cache import JsonCache
 
 TMDB_API_URL = "https://api.themoviedb.org/3"
 DEFAULT_LANGUAGE = "en-US"
 DEFAULT_CACHE = "tmdb_cache.json"
 
 DEFAULT_TIMEOUT = 5
-CALL_INTERVAL_SECONDS = 0.25   # spacing between TMDb calls
+CALL_INTERVAL_SECONDS = 0.25
 
 
 class TMDb:
     def __init__(
         self,
-        api_key,
-        language=DEFAULT_LANGUAGE,
-        cache_file=DEFAULT_CACHE,
+        api_key: str,
+        language: str = DEFAULT_LANGUAGE,
+        cache: Optional[JsonCache] = None,
+        cache_file: str = DEFAULT_CACHE,
         logger=None,
-        offline_mode=False,
-    ):
+        offline_mode: bool = False,
+        debug: bool = False,
+    ) -> None:
         self.api_key = api_key
         self.language = language
-        self.cache_file = Path(cache_file)
         self.logger = logger
         self.offline_mode = offline_mode
-
+        self.debug = debug
+        self.cache = cache or JsonCache(cache_file)
         self._last_call_ts = 0.0
 
-        try:
-            with self.cache_file.open("r", encoding="utf-8") as f:
-                self.cache = json.load(f)
-        except Exception:
-            self.cache = {}
-
-    # log helper
-    def _log(self, msg):
+    def _log(self, msg: str) -> None:
         if self.logger:
             self.logger(msg)
         else:
             print(msg)
 
-    # save cache file
-    def _save_cache(self):
-        try:
-            with self.cache_file.open("w", encoding="utf-8") as f:
-                json.dump(self.cache, f, indent=2)
-        except Exception as e:
-            self._log(f"TMDb cache save failed: {e}")
-
-    # spacing between TMDb calls
-    def _wait_interval(self):
+    def _wait_interval(self) -> None:
         now = time.time()
         delta = now - self._last_call_ts
         if delta < CALL_INTERVAL_SECONDS:
             time.sleep(CALL_INTERVAL_SECONDS - delta)
         self._last_call_ts = time.time()
 
-    # GET with caching
-    def get(self, path, movie_name="", tmdb_id=""):
+    def _request(self, path: str, movie_name: str = "", tmdb_id: Any = "") -> Optional[Dict[str, Any]]:
         if self.offline_mode:
             return None
-
-        if path in self.cache:
-            return self.cache[path]
 
         url = f"{TMDB_API_URL}{path}"
         attempts = 3
@@ -88,12 +74,7 @@ class TMDb:
                     raise RuntimeError("TMDb API key invalid")
 
                 r.raise_for_status()
-                data = r.json()
-
-                # only cache successful responses
-                self.cache[path] = data
-                self._save_cache()
-                return data
+                return r.json()
 
             except Exception as e:
                 self._log(
@@ -105,8 +86,64 @@ class TMDb:
         self._log(f"Skipping '{movie_name}' after repeated TMDb failures.")
         return None
 
-    # poster fetch
-    def get_poster(self, collection_id):
+    def _filter_movie(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        return {
+            "id": data.get("id"),
+            "title": data.get("title") or data.get("original_title"),
+            "release_date": data.get("release_date"),
+            "status": data.get("status"),
+            "belongs_to_collection": data.get("belongs_to_collection"),
+            "poster_path": data.get("poster_path"),
+        }
+
+    def _filter_collection(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        parts = []
+        for item in data.get("parts", []):
+            mid = item.get("id")
+            if not mid:
+                continue
+            parts.append(
+                {
+                    "id": mid,
+                    "title": item.get("title") or item.get("original_title"),
+                    "release_date": item.get("release_date"),
+                }
+            )
+        return {
+            "id": data.get("id"),
+            "name": data.get("name"),
+            "poster_path": data.get("poster_path"),
+            "parts": parts,
+        }
+
+    def get(self, path: str, movie_name: str = "", tmdb_id: Any = "") -> Optional[Dict[str, Any]]:
+        if path.startswith("/movie/"):
+            key_id = path.split("/")[-1]
+            cached = self.cache.get_movie(key_id)
+            if cached is not None:
+                return cached
+            raw = self._request(path, movie_name=movie_name, tmdb_id=tmdb_id)
+            if not raw:
+                return None
+            filtered = self._filter_movie(raw)
+            self.cache.set_movie(key_id, filtered)
+            return filtered
+
+        if path.startswith("/collection/"):
+            key_id = path.split("/")[-1]
+            cached = self.cache.get_collection(key_id)
+            if cached is not None:
+                return cached
+            raw = self._request(path, movie_name=movie_name, tmdb_id=tmdb_id)
+            if not raw:
+                return None
+            filtered = self._filter_collection(raw)
+            self.cache.set_collection(key_id, filtered)
+            return filtered
+
+        return self._request(path, movie_name=movie_name, tmdb_id=tmdb_id)
+
+    def get_poster(self, collection_id: int | str) -> Optional[bytes]:
         data = self.get(f"/collection/{collection_id}")
         if not data:
             return None

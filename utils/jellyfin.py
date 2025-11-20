@@ -1,152 +1,127 @@
+from __future__ import annotations
+
+from typing import Any, Dict, List, Optional
+
 import requests
-import base64
-
-
-# CONSTANTS
-DEFAULT_TIMEOUT = 30
-SUCCESS_CODES = (200, 201, 204)
 
 
 class Jellyfin:
-    def __init__(self, base_url, api_key, dry_run=False, logger=None):
+    def __init__(self, base_url: str, api_key: str, dry_run: bool = False, logger=None, debug: bool = False) -> None:
         self.base = base_url.rstrip("/")
         self.key = api_key
         self.dry_run = dry_run
         self.logger = logger
+        self.debug = debug
 
-    
-    # Logging helper
-    def _log(self, msg):
+    def _log(self, msg: str) -> None:
         if self.logger:
             self.logger(msg)
         else:
             print(msg)
 
-    
-    # Internal header helper
-    def _headers(self):
+    def _headers(self) -> Dict[str, str]:
         return {
             "X-Emby-Token": self.key,
-            "Accept": "application/json",
+            "Content-Type": "application/json",
         }
 
-    
-    # GET wrapper
-    def get(self, path, params=None):
-        r = requests.get(
-            f"{self.base}{path}",
-            headers=self._headers(),
-            params=params,
-            timeout=DEFAULT_TIMEOUT,
-        )
-        r.raise_for_status()
-        return r.json()
-
-    
-    # POST wrapper
-    def post(self, path, params=None, json=None):
-        if self.dry_run:
-            self._log(f"[DRY RUN] POST {path} params={params}")
-            return None
-
-        r = requests.post(
-            f"{self.base}{path}",
-            headers=self._headers(),
-            params=params,
-            json=json,
-            timeout=DEFAULT_TIMEOUT,
-        )
-
-        if r.status_code not in SUCCESS_CODES:
+    def get(self, path: str, params: Optional[Dict[str, Any]] = None) -> Any:
+        url = f"{self.base}{path}"
+        try:
+            r = requests.get(url, headers=self._headers(), params=params, timeout=15)
             r.raise_for_status()
-
-        try:
             return r.json()
-        except Exception:
+        except Exception as e:
+            self._log(f"Jellyfin GET failed: {url} ({e})")
             return None
 
-    
-    # Image upload (Base64 body, proper Content-Type)
-    def upload_image(self, item_id, img_type, img_bytes):
+    def post(self, path: str, params: Optional[Dict[str, Any]] = None, json_body: Any = None) -> Any:
+        url = f"{self.base}{path}"
         if self.dry_run:
-            self._log(f"[DRY RUN] Would upload image for item {item_id}")
-            return
-
-        url = f"{self.base}/Items/{item_id}/Images/{img_type}"
-        b64_data = base64.b64encode(img_bytes).decode("ascii")
-
-        headers = {
-            "X-Emby-Token": self.key,
-            "Content-Type": "image/jpeg",
-        }
-
+            self._log(f"[DRY RUN] POST -> {path} params={params}")
+            return None
         try:
-            r = requests.post(url, headers=headers, data=b64_data, timeout=DEFAULT_TIMEOUT)
+            r = requests.post(url, headers=self._headers(), params=params, json=json_body, timeout=15)
+            r.raise_for_status()
+            if r.text:
+                try:
+                    return r.json()
+                except Exception:
+                    return None
+            return None
         except Exception as e:
-            self._log(f"Poster upload failed (request error): {e}")
-            return
+            self._log(f"Jellyfin POST failed: {url} ({e})")
+            return None
 
-        if r.status_code not in SUCCESS_CODES:
-            self._log(f"Poster upload failed: {r.status_code} {r.text}")
+    def list_users(self) -> List[Dict[str, Any]]:
+        data = self.get("/Users")
+        if not isinstance(data, list):
+            return []
+        return data
 
-    
-    # High-level wrappers
-    def list_users(self):
-        return self.get("/Users")
+    def get_movies(self, user_id: str) -> List[Dict[str, Any]]:
+        params = {
+            "IncludeItemTypes": "Movie",
+            "Recursive": "true",
+            "Fields": "ProviderIds",
+            "UserId": user_id,
+        }
+        data = self.get("/Items", params=params)
+        if not data:
+            return []
+        return data.get("Items", [])
 
-    def get_movies(self, user_id):
-        start = 0
-        size = 200
-        movies = []
+    def find_collection(self, name: str, user_id: str) -> Optional[str]:
+        params = {
+            "IncludeItemTypes": "BoxSet",
+            "Recursive": "true",
+            "SearchTerm": name,
+            "UserId": user_id,
+        }
+        data = self.get("/Items", params=params)
+        if not data:
+            return None
 
-        while True:
-            d = self.get(
-                "/Items",
-                {
-                    "IncludeItemTypes": "Movie",
-                    "Fields": "ProviderIds",
-                    "CollapseBoxSetItems": "false",
-                    "Recursive": "true",
-                    "Limit": size,
-                    "StartIndex": start,
-                    "UserId": user_id,
-                },
-            )
-            chunk = d.get("Items", [])
-            if not chunk:
-                break
-
-            movies.extend(chunk)
-            if len(chunk) < size:
-                break
-
-            start += size
-
-        return movies
-
-    def find_collection(self, name, user_id):
-        d = self.get(
-            "/Items",
-            {
-                "IncludeItemTypes": "BoxSet",
-                "SearchTerm": name,
-                "UserId": user_id,
-                "Recursive": "true",
-            },
-        )
-
-        for item in d.get("Items", []):
+        for item in data.get("Items", []):
             if item.get("Name") == name:
-                return item["Id"]
+                return item.get("Id")
 
         return None
 
-    def create_collection(self, name, ids):
+    def create_collection(self, name: str, ids: List[str]) -> Optional[str]:
         if not ids:
             return None
-
         resp = self.post("/Collections", params={"Name": name, "Ids": ",".join(ids)})
         if not resp:
             return None
-
         return resp.get("Id") or resp.get("id")
+
+    def upload_image(self, item_id: str, img_type: str, content: bytes) -> bool:
+        if self.dry_run:
+            self._log(f"[DRY RUN] Would upload {img_type} image for item {item_id}")
+            return True
+
+        url = f"{self.base}/Items/{item_id}/Images/{img_type}"
+        headers = {"X-Emby-Token": self.key, "Content-Type": "image/jpeg"}
+
+        try:
+            r = requests.post(url, headers=headers, data=content, timeout=30)
+            r.raise_for_status()
+            return True
+        except Exception as e:
+            self._log(f"Poster upload failed for {item_id}: {e}")
+            return False
+
+    def has_primary_image(self, item_id: str) -> bool:
+        url = f"{self.base}/Items/{item_id}/Images/Primary"
+        try:
+            r = requests.get(url, headers={"X-Emby-Token": self.key}, timeout=10)
+            if r.status_code == 200:
+                return True
+            if self.debug:
+                self._log(f"Primary image check status for {item_id}: {r.status_code}")
+            return False
+        except Exception as e:
+            if self.debug:
+                self._log(f"Primary image check failed for {item_id}: {e}")
+            return False
