@@ -10,6 +10,7 @@ import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from dotenv import load_dotenv
 
@@ -234,54 +235,100 @@ def build_collections_online(
     display.progress("Building collections (online)...")
 
     mapping: Dict[str, Dict[str, Any]] = {}
-    total = len(movies)
 
-    for idx, m in enumerate(movies, start=1):
-        display.tmdb_progress(idx, total)
-
+    jobs = []
+    for m in movies:
         tmdb_id = get_tmdb_id(m)
         if not tmdb_id:
             continue
+        jobs.append(
+            {
+                "tmdb_id": tmdb_id,
+                "jf_id": m["Id"],
+                "name": m.get("Name", ""),
+            }
+        )
 
-        info = tmdb.get(f"/movie/{tmdb_id}", movie_name=m.get("Name", ""), tmdb_id=tmdb_id)
-        if not info:
-            continue
+    total = len(jobs)
+    if not total:
+        return {}
 
-        col = info.get("belongs_to_collection")
-        if not col or not col.get("id"):
-            continue
+    with ThreadPoolExecutor(max_workers=5) as pool:
+        futures = {
+            pool.submit(
+                tmdb.get,
+                f"/movie/{job['tmdb_id']}",
+                job["name"],
+                job["tmdb_id"],
+            ): job
+            for job in jobs
+        }
 
-        cid = str(col["id"])
-        mapping.setdefault(cid, {"name": col.get("name") or "", "ids": []})
-        mapping[cid]["ids"].append(m["Id"])
+        for idx, future in enumerate(as_completed(futures), start=1):
+            job = futures[future]
+            display.tmdb_progress(idx, total)
+            try:
+                info = future.result()
+            except Exception as e:
+                logging.debug(f"TMDb movie fetch failed for {job['tmdb_id']}: {e}")
+                continue
+
+            if not info:
+                continue
+
+            col = info.get("belongs_to_collection")
+            if not col or not col.get("id"):
+                continue
+
+            cid = str(col["id"])
+            mapping.setdefault(cid, {"name": col.get("name") or "", "ids": []})
+            mapping[cid]["ids"].append(job["jf_id"])
 
     result: Dict[str, Dict[str, Any]] = {}
-    total_collections = len(mapping)
+    collection_ids = list(mapping.keys())
+    total_collections = len(collection_ids)
 
-    for idx, (cid, d) in enumerate(mapping.items(), start=1):
-        display.progress(f"Fetching collection {idx}/{total_collections} (TMDb {cid})")
+    if not total_collections:
+        return result
 
-        parts = tmdb.get(f"/collection/{cid}") or {}
-        items = parts.get("parts", [])
+    with ThreadPoolExecutor(max_workers=3) as pool:
+        futures = {
+            pool.submit(tmdb.get, f"/collection/{cid}"): cid for cid in collection_ids
+        }
 
-        all_tmdb = [i.get("id") for i in items if i.get("id")]
-        all_movies = [
-            {"id": i.get("id"), "title": i.get("title") or i.get("original_title") or ""}
-            for i in items
-            if i.get("id")
-        ]
+        for idx, future in enumerate(as_completed(futures), start=1):
+            cid = futures[future]
+            display.progress(f"Fetching collection {idx}/{total_collections} (TMDb {cid})")
+            try:
+                parts = future.result() or {}
+            except Exception as e:
+                logging.debug(f"TMDb collection fetch failed for {cid}: {e}")
+                continue
 
-        matched = {mid for mid in all_tmdb if mid in tmdb_to_jf}
+            d = mapping.get(cid)
+            if not d:
+                continue
 
-        if len(d["ids"]) >= MIN_MOVIES:
-            result[cid] = {
-                "name": d["name"],
-                "ids": d["ids"],
-                "tmdb_collection_id": int(cid),
-                "all_tmdb_ids": all_tmdb,
-                "missing_tmdb_ids": [mid for mid in all_tmdb if mid not in matched],
-                "missing_movies": [m for m in all_movies if m["id"] not in matched],
-            }
+            items = parts.get("parts", [])
+
+            all_tmdb = [i.get("id") for i in items if i.get("id")]
+            all_movies = [
+                {"id": i.get("id"), "title": i.get("title") or i.get("original_title") or ""}
+                for i in items
+                if i.get("id")
+            ]
+
+            matched = {mid for mid in all_tmdb if mid in tmdb_to_jf}
+
+            if len(d["ids"]) >= MIN_MOVIES:
+                result[cid] = {
+                    "name": d["name"],
+                    "ids": d["ids"],
+                    "tmdb_collection_id": int(cid),
+                    "all_tmdb_ids": all_tmdb,
+                    "missing_tmdb_ids": [mid for mid in all_tmdb if mid not in matched],
+                    "missing_movies": [m for m in all_movies if m["id"] not in matched],
+                }
 
     return result
 
@@ -341,11 +388,24 @@ def batch_prefetch_missing_tmdb(
         return missing_ids
 
     display.progress("Fetching TMDb metadata for missing movies...")
-    for idx, mid in enumerate(missing_ids, start=1):
-        if cache.has_movie(mid):
-            continue
-        display.progress(f"Missing movie TMDb fetch {idx}/{total} (TMDb {mid})")
-        tmdb.get(f"/movie/{mid}", movie_name="", tmdb_id=mid)
+
+    jobs = [mid for mid in missing_ids if not cache.has_movie(mid)]
+    if not jobs:
+        return missing_ids
+
+    with ThreadPoolExecutor(max_workers=3) as pool:
+        futures = {
+            pool.submit(tmdb.get, f"/movie/{mid}", "", mid): mid for mid in jobs
+        }
+
+        for idx, future in enumerate(as_completed(futures), start=1):
+            mid = futures[future]
+            display.progress(f"Missing movie TMDb fetch {idx}/{len(jobs)} (TMDb {mid})")
+            try:
+                future.result()
+            except Exception as e:
+                logging.debug(f"TMDb missing movie fetch failed for {mid}: {e}")
+                continue
 
     return missing_ids
 
@@ -444,9 +504,25 @@ def rebuild_cache(
     ids = sorted(tmdb_map.keys())
     total = len(ids)
 
-    for idx, mid in enumerate(ids, start=1):
-        display.progress(f"Rebuild TMDb movie {idx}/{total} (TMDb {mid})")
-        tmdb.get(f"/movie/{mid}", movie_name="", tmdb_id=mid)
+    if not total:
+        out("No TMDb IDs found in Jellyfin movies, nothing to cache.")
+        return
+
+    jobs = list(ids)
+
+    with ThreadPoolExecutor(max_workers=3) as pool:
+        futures = {
+            pool.submit(tmdb.get, f"/movie/{mid}", "", mid): mid for mid in jobs
+        }
+
+        for idx, future in enumerate(as_completed(futures), start=1):
+            mid = futures[future]
+            display.progress(f"Rebuild TMDb movie {idx}/{total} (TMDb {mid})")
+            try:
+                future.result()
+            except Exception as e:
+                logging.debug(f"TMDb rebuild fetch failed for {mid}: {e}")
+                continue
 
     out("TMDb cache rebuild complete.")
 

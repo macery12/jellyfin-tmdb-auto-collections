@@ -1,10 +1,8 @@
 from __future__ import annotations
-
+from threading import Lock
 import time
 from typing import Any, Dict, Optional
-
 import requests
-
 from .cache import JsonCache
 
 TMDB_API_URL = "https://api.themoviedb.org/3"
@@ -13,7 +11,7 @@ DEFAULT_CACHE = "tmdb_cache.json"
 
 DEFAULT_TIMEOUT = 5
 CALL_INTERVAL_SECONDS = 0.25
-
+tmdb_lock = Lock()
 
 class TMDb:
     def __init__(
@@ -56,25 +54,28 @@ class TMDb:
 
         for attempt in range(1, attempts + 1):
             try:
-                self._wait_interval()
+                with tmdb_lock:
+                    self._wait_interval()
 
-                r = requests.get(
-                    url,
-                    params={"api_key": self.api_key, "language": self.language},
-                    timeout=DEFAULT_TIMEOUT,
-                )
+                    r = requests.get(
+                        url,
+                        params={"api_key": self.api_key, "language": self.language},
+                        timeout=DEFAULT_TIMEOUT,
+                    )
 
-                if r.status_code == 429:
-                    retry = int(r.headers.get("Retry-After", "3"))
-                    self._log(f"TMDb 429 Too Many Requests, waiting {retry}s")
-                    time.sleep(retry)
-                    continue
+                    if r.status_code == 429:
+                        retry_after = int(r.headers.get("Retry-After", "3"))
+                        self._log(f"TMDb 429 Too Many Requests, waiting {retry_after}s")
+                        time.sleep(retry_after)
+                        continue
 
-                if r.status_code == 401:
-                    raise RuntimeError("TMDb API key invalid")
+                    if r.status_code == 401:
+                        raise RuntimeError("TMDb API key invalid")
 
-                r.raise_for_status()
-                return r.json()
+                    r.raise_for_status()
+                    data = r.json()
+
+                return data
 
             except Exception as e:
                 self._log(
@@ -85,6 +86,7 @@ class TMDb:
 
         self._log(f"Skipping '{movie_name}' after repeated TMDb failures.")
         return None
+
 
     def _filter_movie(self, data: Dict[str, Any]) -> Dict[str, Any]:
         return {
