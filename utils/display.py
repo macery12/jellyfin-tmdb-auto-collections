@@ -47,7 +47,7 @@ class Display:
         print(f"Collections discovered:         {collections_found}")
         print(f"Collections created:            {len(self.collections_created)}")
         print(f"Collections updated:            {len(self.collections_updated)}")
-        print(f"Missing movies detected:        {missing_detected}")
+        print(f"Missing movies:        {missing_detected}")
         print(f"Jellyseerr requests sent:       {len(self.missing_requests)}")
 
         if skipped_stats:

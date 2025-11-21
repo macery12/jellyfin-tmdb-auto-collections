@@ -63,53 +63,39 @@ def out(msg: str) -> None:
     logging.info(msg)
 
 
+def dbg(debug_enabled: bool, msg: str) -> None:
+    if debug_enabled:
+        logging.debug(msg)
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Jellyfin TMDb auto collection builder")
 
     parser.set_defaults(
         dry_run=True,
-        offline=False,
-        use_jellyseerr=False,
-        skip_missing=False,
+        jellyseer=False,
+        jellyseer_send=False,
     )
 
-    parser.add_argument(
-        "--dry-run",
-        dest="dry_run",
-        action="store_true",
-        help="Preview changes only (default).",
-    )
     parser.add_argument(
         "--no-dryrun",
         dest="dry_run",
         action="store_false",
-        help="Apply changes to Jellyfin.",
+        help="Apply changes to Jellyfin (default is preview-only).",
     )
 
     parser.add_argument(
-        "--offline",
-        dest="offline",
+        "--jellyseer",
+        dest="jellyseer",
         action="store_true",
-        help="Use metadata/collections.json instead of TMDb.",
-    )
-    parser.add_argument(
-        "--online",
-        dest="offline",
-        action="store_false",
-        help="Use TMDb API (default).",
+        help="Enable Jellyseer integration in check-only mode.",
     )
 
     parser.add_argument(
-        "--jellyseerr",
-        dest="use_jellyseerr",
+        "--jellyseer-send",
+        dest="jellyseer_send",
         action="store_true",
-        help="Enable Jellyseerr integration.",
-    )
-    parser.add_argument(
-        "--no-jellyseerr",
-        dest="use_jellyseerr",
-        action="store_false",
-        help="Disable Jellyseerr integration.",
+        help="Enable Jellyseer integration in full mode (send requests).",
     )
 
     parser.add_argument(
@@ -124,13 +110,6 @@ def parse_args() -> argparse.Namespace:
         dest="rebuild_cache",
         action="store_true",
         help="Rebuild TMDb cache and exit.",
-    )
-
-    parser.add_argument(
-        "--skip-missing",
-        dest="skip_missing",
-        action="store_true",
-        help="Skip processing missing movies and Jellyseerr requests.",
     )
 
     return parser.parse_args()
@@ -253,6 +232,8 @@ def build_collections_online(
     if not total:
         return {}
 
+    dbg(tmdb.debug, f"[COLLECT] Building collections online for {total} mapped movies")
+
     with ThreadPoolExecutor(max_workers=5) as pool:
         futures = {
             pool.submit(
@@ -346,6 +327,8 @@ def apply_collections(
         name = data["name"]
         ids = data["ids"]
 
+        dbg(jf.debug, f"[APPLY] Processing collection '{name}' with {len(ids)} items")
+
         existing_id = jf.find_collection(name, user_id)
 
         if existing_id:
@@ -361,13 +344,16 @@ def apply_collections(
             continue
 
         if skip_poster_if_exists and jf.has_primary_image(jf_id):
+            dbg(jf.debug, f"[APPLY] Skipping poster upload for '{name}' (poster exists)")
             continue
 
         poster_bytes = tmdb.get_poster(cid)
         if not poster_bytes:
+            dbg(tmdb.debug, f"[APPLY] No poster bytes for collection '{name}' (TMDb {cid})")
             continue
 
         jf.upload_image(jf_id, "Primary", poster_bytes)
+        dbg(jf.debug, f"[APPLY] Uploaded poster for '{name}'")
 
 
 def batch_prefetch_missing_tmdb(
@@ -383,14 +369,18 @@ def batch_prefetch_missing_tmdb(
             if mid not in missing_ids:
                 missing_ids.append(mid)
 
-    total = len(missing_ids)
-    if not total:
+    if not missing_ids:
+        return missing_ids
+
+    if tmdb.offline_mode or not tmdb.api_key:
+        dbg(tmdb.debug, "[MISSING] Skipping TMDb prefetch (offline mode or no API key)")
         return missing_ids
 
     display.progress("Fetching TMDb metadata for missing movies...")
 
-    jobs = [mid for mid in missing_ids if not cache.has_movie(mid)]
+    jobs = [mid for mid in missing_ids if not cache.get_movie(mid)]
     if not jobs:
+        dbg(tmdb.debug, "[MISSING] All missing movies already in cache, no TMDb prefetch needed")
         return missing_ids
 
     with ThreadPoolExecutor(max_workers=3) as pool:
@@ -398,11 +388,13 @@ def batch_prefetch_missing_tmdb(
             pool.submit(tmdb.get, f"/movie/{mid}", "", mid): mid for mid in jobs
         }
 
+        total_jobs = len(jobs)
         for idx, future in enumerate(as_completed(futures), start=1):
             mid = futures[future]
-            display.progress(f"Missing movie TMDb fetch {idx}/{len(jobs)} (TMDb {mid})")
+            display.progress(f"Missing movie TMDb fetch {idx}/{total_jobs} (TMDb {mid})")
             try:
                 future.result()
+                dbg(tmdb.debug, f"[MISSING] Prefetched TMDb metadata for {mid}")
             except Exception as e:
                 logging.debug(f"TMDb missing movie fetch failed for {mid}: {e}")
                 continue
@@ -417,15 +409,17 @@ def process_missing(
     display: Display,
     jellyseer: Optional[JellyseerrClient],
     dry_run: bool,
+    dbg_enabled: bool = False,
 ) -> Tuple[int, Dict[str, int], int]:
     if not jellyseer:
         return 0, {}, 0
 
-    display.progress("Processing Jellyseerr requests...")
+    display.progress("Processing Jellyseer requests...")
+    dbg(dbg_enabled, f"[MISSING] Starting Jellyseer processing over {len(collections)} collections")
     count = 0
 
     skipped_stats = {
-        "No TMDb details": 0,
+        "No metadata": 0,
         "No release date": 0,
         "Invalid release date": 0,
         "Unreleased (future year)": 0,
@@ -442,9 +436,39 @@ def process_missing(
             title = movie["title"]
             total_missing += 1
 
+            dbg(dbg_enabled, f"[MISSING] Evaluating TMDb {tmdb_id} ({title}) in collection '{cname}'")
+
             details_raw = cache.get_movie(tmdb_id)
+            if details_raw:
+                dbg(dbg_enabled, f"[META] Using cached metadata for TMDb {tmdb_id} ({title})")
+            else:
+                dbg(dbg_enabled, f"[META] No cache entry for TMDb {tmdb_id}")
+
+            if not details_raw and tmdb.api_key and not tmdb.offline_mode:
+                dbg(dbg_enabled, f"[META] Attempting TMDb API for TMDb {tmdb_id}")
+                try:
+                    api_data = tmdb.get(f"/movie/{tmdb_id}", movie_name=title, tmdb_id=tmdb_id)
+                    if api_data:
+                        details_raw = api_data
+                        cache.set_movie(tmdb_id, api_data)
+                        dbg(dbg_enabled, f"[META] TMDb API success for TMDb {tmdb_id}")
+                except Exception as e:
+                    logging.debug(f"TMDb API failed for missing movie {tmdb_id}: {e}")
+                    dbg(dbg_enabled, f"[META] TMDb API FAILED for TMDb {tmdb_id}: {e}")
+
+            if not details_raw and jellyseer:
+                dbg(dbg_enabled, f"[META] Attempting Jellyseerr fallback for TMDb {tmdb_id}")
+                fallback = jellyseer.fallback_tmdb_movie(tmdb_id)
+                if fallback:
+                    details_raw = fallback
+                    cache.set_movie(tmdb_id, fallback)
+                    dbg(dbg_enabled, f"[META] Jellyseerr fallback success for TMDb {tmdb_id}")
+                else:
+                    dbg(dbg_enabled, f"[META] Jellyseerr fallback FAILED for TMDb {tmdb_id}")
+
             if not details_raw:
-                skipped_stats["No TMDb details"] += 1
+                skipped_stats["No metadata"] += 1
+                dbg(dbg_enabled, f"[SKIP] TMDb {tmdb_id} skipped due to NO METADATA")
                 continue
 
             details = CachedMovie.from_tmdb(details_raw)
@@ -453,41 +477,52 @@ def process_missing(
 
             if not release_date:
                 skipped_stats["No release date"] += 1
+                dbg(dbg_enabled, f"[SKIP] TMDb {tmdb_id} skipped: no release date")
                 continue
 
             try:
                 release_year = int(str(release_date)[:4])
             except Exception:
                 skipped_stats["Invalid release date"] += 1
+                dbg(dbg_enabled, f"[SKIP] TMDb {tmdb_id} skipped: invalid release date '{release_date}'")
                 continue
 
             if release_year > CURRENT_YEAR:
                 skipped_stats["Unreleased (future year)"] += 1
+                dbg(dbg_enabled, f"[SKIP] TMDb {tmdb_id} skipped: unreleased (year={release_year})")
                 continue
 
             if status in ("Rumored", "Planned"):
                 skipped_stats["Rumored/Planned"] += 1
+                dbg(dbg_enabled, f"[SKIP] TMDb {tmdb_id} skipped: status={status}")
                 continue
 
             if dry_run:
                 display.log_missing_request(title, tmdb_id, cname)
+                dbg(dbg_enabled, f"[JELLYSEER] DRY-RUN: would request TMDb {tmdb_id} ({title})")
                 count += 1
                 continue
 
             try:
                 existing = jellyseer.is_movie_requested(tmdb_id)
             except Exception as e:
-                logging.debug(f"Jellyseerr check failed for {tmdb_id}: {e}")
+                logging.debug(f"Jellyseer check failed for {tmdb_id}: {e}")
+                dbg(dbg_enabled, f"[JELLYSEER] Check FAILED for TMDb {tmdb_id}: {e}")
                 existing = None
 
             if not existing:
                 try:
                     jellyseer.request_movie(tmdb_id)
                     display.log_missing_request(title, tmdb_id, cname)
+                    dbg(dbg_enabled, f"[JELLYSEER] Requested TMDb {tmdb_id} ({title})")
                     count += 1
                 except Exception as e:
-                    logging.warning(f"Jellyseerr request failed for {tmdb_id}: {e}")
+                    logging.warning(f"Jellyseer request failed for {tmdb_id}: {e}")
+                    dbg(dbg_enabled, f"[JELLYSEER] Request FAILED for TMDb {tmdb_id}: {e}")
+            else:
+                dbg(dbg_enabled, f"[JELLYSEER] Skipping TMDb {tmdb_id} ({title}) - already requested/present")
 
+    dbg(dbg_enabled, f"[MISSING] Finished Jellyseer processing: total_missing={total_missing}, sent/check_only={count}, skipped={skipped_stats}")
     return count, skipped_stats, total_missing
 
 
@@ -549,18 +584,20 @@ def main() -> None:
     jf_key = get_env_or_die("JELLYFIN_API_KEY")
 
     tmdb_key = os.getenv("TMDB_API_KEY")
+    has_tmdb_key = bool(tmdb_key)
 
-    tmdb_required = not args.offline or args.rebuild_cache
-    if tmdb_required and not tmdb_key:
-        out("TMDB_API_KEY is required for online TMDb usage (collections or cache rebuild).")
+    if args.rebuild_cache and not has_tmdb_key:
+        out("TMDB_API_KEY is required for --rebuild-cache.")
         sys.exit(1)
 
+    jellyseer_enabled = args.jellyseer or args.jellyseer_send
+
     jellyseer_client: Optional[JellyseerrClient] = None
-    if args.use_jellyseerr and not args.skip_missing:
+    if jellyseer_enabled:
         js_url = os.getenv("JELLYSEERR_URL")
         js_key = os.getenv("JELLYSEERR_API_KEY")
         if not js_url or not js_key:
-            out("You passed --jellyseerr but JELLYSEERR_URL or JELLYSEERR_API_KEY is missing in the environment.")
+            out("Jellyseer flags were used but JELLYSEERR_URL or JELLYSEERR_API_KEY is missing in the environment.")
             sys.exit(1)
         jellyseer_client = JellyseerrClient(
             base_url=js_url.rstrip("/") + "/api/v1",
@@ -573,7 +610,7 @@ def main() -> None:
     tmdb = TMDb(
         api_key=tmdb_key or "",
         cache=cache,
-        offline_mode=args.offline,
+        offline_mode=not has_tmdb_key,
         logger=logging.info,
         debug=args.debug,
     )
@@ -582,21 +619,18 @@ def main() -> None:
 
     user_id = pick_user_id(jf)
 
+    mode_str = "ONLINE (TMDb API)" if has_tmdb_key else "OFFLINE (local metadata)"
     out("")
     out("=== Jellyfin TMDb Auto Collection Builder ===")
     out("")
     out(
-        f"Mode: {'OFFLINE' if args.offline else 'ONLINE'} | "
+        f"Mode: {mode_str} | "
         f"Dry run: {args.dry_run} | "
-        f"Jellyseerr: {bool(jellyseer_client and not args.skip_missing)} | "
-        f"Skip missing: {args.skip_missing}"
+        f"Jellyseer: {bool(jellyseer_client)}"
     )
     out("")
 
     if args.rebuild_cache:
-        if args.offline:
-            out("--rebuild-cache requires online mode.")
-            sys.exit(1)
         rebuild_cache(jf, tmdb, cache, user_id, display)
         return
 
@@ -606,29 +640,31 @@ def main() -> None:
 
     tmdb_to_jf = build_tmdb_mapping(movies)
 
-    if args.offline:
-        collections = build_collections_offline(movies, tmdb_to_jf, display)
-    else:
+    if has_tmdb_key:
         collections = build_collections_online(movies, tmdb_to_jf, tmdb, display)
+    else:
+        collections = build_collections_offline(movies, tmdb_to_jf, display)
 
     collections_found = len(collections)
     out(f"\nFound {collections_found} collections\n")
 
-    missing_total = sum(len(d["missing_movies"]) for d in collections.values())
+    missing_ids: List[int] = []
+    missing_total = 0
+    skipped_stats: Dict[str, int] = {}
 
-    if args.skip_missing:
-        out("Skipping missing movie processing (--skip-missing).")
-        missing_ids: List[int] = []
-        skipped_stats: Dict[str, int] = {}
-    else:
-        missing_ids = batch_prefetch_missing_tmdb(collections, tmdb, cache, display)
+    if jellyseer_enabled and collections:
+        if has_tmdb_key:
+            missing_ids = batch_prefetch_missing_tmdb(collections, tmdb, cache, display)
+
+        dry_run_for_jellyseer = not args.jellyseer_send
         missing_count, skipped_stats, total_missing = process_missing(
             collections=collections,
             tmdb=tmdb,
             cache=cache,
             display=display,
             jellyseer=jellyseer_client,
-            dry_run=args.dry_run,
+            dry_run=dry_run_for_jellyseer,
+            dbg_enabled=args.debug,
         )
         missing_total = total_missing
 
